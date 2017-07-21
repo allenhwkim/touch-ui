@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- user-scalable=no to prevent 300ms delay -->
+  <meta name="viewport" content="width=device-width,user-scalable=no">
+  <script src="touch-ui.js"></script>
+  <script src="touch-drag.js"></script>
+  <script src="touch-drop.js"></script>
+  <style>
+  html, body {
+    height: 100%;
+  }
+  body {
+    background-repeat: repeat-y; 
+    background-position: center; 
+  }
+  div.draggable {
+    width: 250px;
+    height:50px; 
+    background: #999; 
+    color: #fff; 
+    background-repeat: repeat-y; 
+    background-position: 200px 0; 
+    margin: 10px;
+  }
+  div.droppable {
+    width: calc(50% - 5px);
+    float: left;
+    border: 2px dashed #333;
+    height: 77%;
+  }
+  </style>
+</head>
+<body>
+  Try these with Touch-UI
+  <ul>
+    <li>drag-start
+    <li>drag-move
+    <li>drag-end
+  </ul>
+
+  <div class="droppable" id="drop-1">
+    Drop Here
+    <div class="draggable" id="drag-1">Drag-1</div> <br/>
+    <div class="draggable" id="drag-2">Drag-2</div> <br/>
+    <div class="draggable" id="drag-3">Drag-3</div> <br/>
+  </div>
+  <div class="droppable" id="drop-2">
+  </div>
+
+  <script>
+    let dragEls = Array.from(document.querySelectorAll('div.draggable'));
+    let dropEls = Array.from(document.querySelectorAll('div.droppable'));
+    new TouchDrag(dragEls);
+    new TouchDrop(dropEls)
+
+    dropEls.forEach(el => {
+      el.addEventListener('drag-enter', e => TouchUI.setBgText(el, e.eventName) );
+      el.addEventListener('drag-leave', e => TouchUI.setBgText(el, e.eventName) );
+      el.addEventListener('drop',       e => {
+        e.target.appendChild(e.dragEl);
+        TouchUI.setBgText(el, e.eventName);
+      });
+    });
+
+  </script>
+</body>
+
+</html>

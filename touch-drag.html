@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- user-scalable=no to prevent 300ms delay -->
+  <meta name="viewport" content="width=device-width,user-scalable=no">
+  <script src="touch-ui.js"></script>
+  <script src="touch-drag.js"></script>
+  <style>
+  html, body {
+    height: 100%;
+  }
+  body {
+    background-repeat: repeat-y; 
+    background-position: center; 
+  }
+  div {
+    width: 33%; height:50px; background: #ccc; color: #fff; 
+    background-repeat: repeat-y; 
+    background-position: 200px 0; 
+  }
+  div#el-2 { margin-left: 33%; }
+  div#el-3 { float: right; }
+  div#console {
+    background: #ccc;
+    color: #fff;
+    position:fixed;
+    bottom:0;
+    right: 0;
+    height: auto;
+    min-width: 30%;
+    text-align: right;
+  }
+  </style>
+</head>
+<body>
+  <div id="console"></div>
+
+  Try these with Touch-UI
+  <ul>
+    <li>drag-start
+    <li>drag-move
+    <li>drag-end
+  </ul>
+
+  <div id="el-1">Drag Anywhere<pre>new TouchDrag(el)<pre></div> <br/><br/><br/>
+  <div id="el-2">Drag Horizontally<pre>new TouchDrag(el, {axis:'x'})<pre></div> <br/><br/><br/>
+  <div id="el-3">Drag Vertically<pre>new TouchDrag(el, {axis:'y'})<pre></div> <br/><br/><br/>
+  <div id="console"></div>
+  <script>
+    let el1 = document.querySelector('#el-1');
+    let el2 = document.querySelector('#el-2');
+    let el3 = document.querySelector('#el-3');
+    let drag = new TouchDrag(el1);
+    new TouchDrag(el2, {axis: 'x'});
+    new TouchDrag(el3, {axis: 'y'});
+
+    [el1, el2, el3].forEach(el => {
+      el.addEventListener('hold', e => TouchUI.setBgText(el, 'drag-start') ); //intentionally wrong :)
+      el.addEventListener('drag-start', e => TouchUI.setBgText(el, e.eventName) );
+      el.addEventListener('drag-move',  e => TouchUI.setBgText(el, e.eventName) );
+      el.addEventListener('drag-end',   e => TouchUI.setBgText(el, e.eventName) );
+    });
+
+    document.body.addEventListener(TouchUI.touchMove, e => {
+      if (drag.touch.holdHappened) {
+        document.querySelector('#console').innerHTML = `
+          Total Movement: ${JSON.stringify(drag.touch.getMove())}<br/>
+          LastMovement: ${JSON.stringify(drag.touch.lastMove)} `;
+      }
+    });
+  </script>
+
+</body>
+
+</html>
