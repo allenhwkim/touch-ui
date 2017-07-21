@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- user-scalable=no to prevent 300ms delay -->
+  <meta name="viewport" content="width=device-width,user-scalable=no">
+  <script src="touch-ui.js"></script>
+  <script src="touch-swipe.js"></script>
+  <style>
+  html, body {
+    height: 100%;
+  }
+  body {
+    background-repeat: repeat-y; 
+    background-position: center; 
+  }
+  div {
+    width: 33%; height:100px; background: #ccc; color: #fff; 
+    background-repeat: repeat-y; 
+    background-position: 200px 0; 
+  }
+  div#el-2 { margin-left: 33%; }
+  div#el-3 { float: right; }
+  </style>
+</head>
+<body>
+  Try these with Touch-UI
+  <ul>
+    <li>swipe-left
+    <li>swipe-right
+    <li>swipe-up
+    <li>swipe-down
+  </ul>
+
+  <div id="el-1" class="swipable">Swipe Here</div> <br/><br/><br/>
+  <div id="el-2" class="swipable">Swipe Here</div> <br/><br/><br/>
+  <div id="el-3" class="swipable">Swipe Here</div> <br/><br/><br/>
+  <script>
+    let els = [document.body].concat(Array.from(document.querySelectorAll('.swipable')));
+    new TouchSwipe(els, {minMove: 50});
+
+    els.forEach(el => {
+      el.addEventListener('swipe-up', e => TouchUI.setBgText(el, e.eventName) );
+      el.addEventListener('swipe-down', e => TouchUI.setBgText(el, e.eventName) );
+      el.addEventListener('swipe-left', e => TouchUI.setBgText(el, e.eventName) );
+      el.addEventListener('swipe-right', e => TouchUI.setBgText(el, e.eventName) );
+    });
+  </script>
+
+</body>
+
+</html>
