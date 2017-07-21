@@ -1,3 +1,4 @@
+updating..
 Note: Here are some useful tips when dealing with touch events
 
 Thanks to: 
