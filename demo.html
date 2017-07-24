@@ -78,6 +78,9 @@
   }
 
   /* swipe related */
+  #swipe-test.touch-box {
+    background-position-y: 75px;
+  }
   .swipable {
     width: calc(33% - 18px);
     height: 50%;
@@ -121,16 +124,21 @@
   </div>
   <div style="clear:both"></div>
 
-  <script>
+  <script id="tap-hold-script">
     //Tap and Hold Test 
     let tapHoldEl = document.querySelector('#tap-hold');
-    let tapHoldEventNames = ['tap', 'double-tap', 'triple-tap', 'hold', 'tap-and-hold', 'double-tap-and-old'];
+    let tapHoldEventNames = 
+      ['tap', 'double-tap', 'triple-tap', 'hold', 'tap-and-hold', 'double-tap-and-old'];
     tapHoldEventNames.forEach(eventName =>  {
       tapHoldEl.addEventListener(eventName, e => {
         setBgText(tapHoldEl, e.eventName)
       });
     });
   </script>
+
+  Code:
+  <script>document.write('<pre>'+document.querySelector('#tap-hold-script').innerHTML+'</pre>')</script>
+   
 
   <!-- Drag Test Only -->
   <h2> Drag </h2>
@@ -150,7 +158,7 @@
   </div>
   <div style="clear:both"></div>
 
-  <script>
+  <script id="drag-script">
     let dragEls = Array.from(document.querySelectorAll('.draggable'));
     new TouchDrag(dragEls[0], {axis: 'xy'});
     new TouchDrag(dragEls[1], {axis: 'x'});
@@ -163,6 +171,9 @@
       el.addEventListener('drag-end',   e => setBgText(el, e.eventName) );
     });
   </script>
+
+  Code:
+  <script>document.write('<pre>'+document.querySelector('#drag-script').innerHTML+'</pre>')</script>
 
   <!-- Drag And Drop Test -->
   <h2> Drop </h2>
@@ -179,7 +190,7 @@
   </div>
   <div style="clear:both"></div>
 
-  <script>
+  <script id="drag-drop-script">
     let dropDragEls = Array.from(document.querySelectorAll('.droppable .draggable'));
     let dropzoneEls = Array.from(document.querySelectorAll('.droppable'));
     new TouchDrag(dropDragEls);
@@ -194,6 +205,9 @@
       });
     });
   </script>
+
+  Code:
+  <script>document.write('<pre>'+document.querySelector('#drag-drop-script').innerHTML+'</pre>')</script>
 
   <!-- Swipe Test -->
   <h2> Swipe </h2>
@@ -218,7 +232,7 @@
   <br/>
   <br/>
 
-  <script>
+  <script id="swipe-script">
     let els = Array.from(document.querySelectorAll('.swipable'));
     els.push(document.querySelector('#swipe-test'));
     new TouchSwipe(els);
@@ -230,6 +244,8 @@
     });
   </script>
 
+  Code:
+  <script>document.write('<pre>'+document.querySelector('#swipe-script').innerHTML+'</pre>')</script>
 </body>
 
 </html>
