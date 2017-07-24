@@ -15,7 +15,7 @@ class TouchSwipe {
 
   constructor() {
     this.els = [];
-    let defaultOptions = {minMove: 100};
+    let defaultOptions = {minMove: 50};
     let args = TouchUI.parseArguments(Array.from(arguments), defaultOptions);
     [this.els, this.options]  = [args.elements, args.options];
  
@@ -26,7 +26,7 @@ class TouchSwipe {
   init() {
     this.els.forEach(el => {
       TouchUI.disableDefaultTouchBehaviour(el);
-      el.addEventListener(TouchUI.touchMove,  this.touchMoveHandler.bind(this));
+      el.addEventListener(TouchUI.touchMove,  this.touchMoveHandler.bind(this), {passive: true});
     })
   }
 

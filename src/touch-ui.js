@@ -17,11 +17,11 @@ class TouchUI {
   constructor() {
     if (!touchUIInstance) {
       touchUIInstance = this;
-      this.startPos = null;  // position touch started
+      this.startPosEvent = null;  // position touch started
       this.startAt = null;   // time touch  started
 
-      this.prevPos = null;   // previous touch position when touch move
-      this.endPos = null;    // the current touch position
+      this.prevPosEvent = null;   // previous touch position when touch move
+      this.endPosEvent = null;    // the current touch position
 
       this.lastTouchEventName = null; //name of last event. e.g. tap, double-tap
       this.lastTouchEventAt = null;   //time of last event
@@ -33,7 +33,6 @@ class TouchUI {
       this.holdTimer = null;          //hold happens after his time
 
       this.dragEl = null;             //the element that currently dragging
-      console.log('............ singleton', this.dragEl)
       this.init();
     }
     return touchUIInstance;
@@ -47,14 +46,15 @@ class TouchUI {
     //The following won't happen because it is a singleton
     let doc = document.body;
 
-    doc.addEventListener(TouchUI.touchStart, this.touchStartHandler.bind(this));
-    doc.addEventListener(TouchUI.touchMove,  this.touchMoveHandler.bind(this));
-    doc.addEventListener(TouchUI.touchEnd,   this.touchEndHandler.bind(this));
-    doc.addEventListener(TouchUI.touchLeave, this.touchResetHandler.bind(this));
+    doc.addEventListener(TouchUI.touchStart, this.touchStartHandler.bind(this), {passive: true});
+    doc.addEventListener(TouchUI.touchMove,  this.touchMoveHandler.bind(this), {passive: true});
+    doc.addEventListener(TouchUI.touchEnd,   this.touchEndHandler.bind(this), {passive: true});
+    doc.addEventListener(TouchUI.touchLeave, this.touchResetHandler.bind(this), {passive: true});
   }
 
   touchStartHandler(e) {
-    this.startPos = e.touches ? e.touches : e;
+    console.log(e.type);
+    this.startPosEvent = e;
     this.startAt = (new Date()).getTime();
     this.holeHappened = false;
 
@@ -69,21 +69,22 @@ class TouchUI {
       this.holdHappened = true;
       clearTimeout(this.holdTimer);
     }, TouchUI.HOLD_TIME);
-    this.prevPos = this.startPos;
+    this.prevPosEvent = this.startPosEvent;
   }
 
   touchMoveHandler(e) {
-    this.endPos = e.touches ? e.touches : e;
-    this.lastMove = TouchUI.calcMove(this.prevPos, this.endPos);
+    this.endPosEvent = e;
+    this.lastMove = TouchUI.calcMove(this.prevPosEvent, this.endPosEvent);
     if (this.getMove().length > TouchUI.SMALL_MOVE) { // not a small movement
       clearTimeout(this.holdTimer);
       clearTimeout(this.tapTimer);
     }
-    this.prevPos = this.endPos;
+    this.prevPosEvent = this.endPosEvent;
   }
 
   touchEndHandler(e) {
-    this.endPos = e.touches ? e.touches : e;
+    console.log(e);
+    this.endPosEvent = e;
     if (this.getMove().length < TouchUI.SMALL_MOVE) { //if little moved
       let eventName = 
         this.lastTouchEventName == 'tap' ? 'double-tap' :
@@ -95,16 +96,17 @@ class TouchUI {
   }
 
   touchResetHandler(e) {
-    this.startPos = null;
+    console.log('reset');
+    this.startPosEvent = null;
     this.startAt = null;
-    this.prevPos = null;
-    this.endPos = null;
-    this.lastTouchEventName = null;
-    this.lastTouchEventAt = null;
+    this.prevPosEvent = null;
+    this.endPosEvent = null;
     this.lastMove = null;
     this.holdHappened = false;
     clearTimeout(this.holdTimer);
-    //To catch continuous actoins, e.g., double-tap
+    // this.lastTouchEventName = null;  // Don't do this. will be done by timer
+    // this.lastTouchEventAt = null;    // Don't do this. will be done by timer
+    // To catch continuous actoins, e.g., double-tap
     this.tapTimer = setTimeout(() => {
       this.lastTouchEventName = null;
       this.lastTouchEventAt = null;
@@ -112,7 +114,8 @@ class TouchUI {
   }
 
   getMove() {
-    return TouchUI.calcMove(this.startPos, this.endPos);
+    console.log('getMove', this.startPosEvent, this.endPosEvent)
+    return TouchUI.calcMove(this.startPosEvent, this.endPosEvent);
   }
 
 }
@@ -170,15 +173,14 @@ TouchUI.fireTouchEvent = function(el, eventName, orgEvent, eventData) {
 
   el.dispatchEvent(customEvent);
 
-  orgEvent.preventDefault();
-  //console.log('firing', eventName, 'on', el, customEvent);
+  //orgEvent.preventDefault();
 }
 
-TouchUI.setBgText = function(el, text) {
-  el = el || document.body;
-  text = text || 'tap or swipe here';
-  el.style.backgroundImage = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='50px' width='300px'><text x='0' y='30' font-size='24' fill='grey'>${text}</text></svg>")`;
-}
+// TouchUI.setBgText = function(el, text) {
+//   el = el || document.body;
+//   text = text || 'tap or swipe here';
+//   el.style.backgroundImage = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='50px' width='300px'><text x='0' y='30' font-size='24' fill='grey'>${text}</text></svg>")`;
+// }
   
 TouchUI.getStyle = function(elem, prop) {
   if (elem.currentStyle) {
@@ -210,22 +212,22 @@ TouchUI.disableDefaultTouchBehaviour = function(el) {
   el.style.webkitTapHighlightColor = 'rgba(0,0,0,0)';
 }
   
-TouchUI.emulateTouchEvents = function(el) {
-  el.addEventListener('mousedown',  e => TouchUI.fireTouchEvent(el, 'touchstart', e) );
-  el.addEventListener('mousemove',  e => TouchUI.fireTouchEvent(el, 'touchmove', e) );
-  el.addEventListener('mouseup',    e => TouchUI.fireTouchEvent(el, 'touchend', e) );
-  el.addEventListener('mouseenter', e => TouchUI.fireTouchEvent(el, 'touchenter', e) );
-  el.addEventListener('mouseleave', e => TouchUI.fireTouchEvent(el, 'touchleave', e) );
-}
+// TouchUI.emulateTouchEvents = function(el) {
+//   el.addEventListener('mousedown',  e => TouchUI.fireTouchEvent(el, 'touchstart', e) );
+//   el.addEventListener('mousemove',  e => TouchUI.fireTouchEvent(el, 'touchmove', e) );
+//   el.addEventListener('mouseup',    e => TouchUI.fireTouchEvent(el, 'touchend', e) );
+//   el.addEventListener('mouseenter', e => TouchUI.fireTouchEvent(el, 'touchenter', e) );
+//   el.addEventListener('mouseleave', e => TouchUI.fireTouchEvent(el, 'touchleave', e) );
+// }
 
-TouchUI.calcMove = function(startPos, endPos) {
+TouchUI.calcMove = function(startPosEvent, endPosEvent) {
   let move = { x:0, y:0, length: 0, direction: null };
   let startX, startY, endX, endY;
-  if (startPos && endPos) {
-    startX = startPos.touches ? startPos.touches[0].pageX : startPos.clientX;
-    startY = startPos.touches ? startPos.touches[0].pageY : startPos.clientY;
-    endX   = endPos.touches ?   endPos.touches[0].pageX   : endPos.clientX;
-    endY   = endPos.touches ?   endPos.touches[0].pageY   : endPos.clientY;
+  if (startPosEvent && endPosEvent) {
+    startX = startPosEvent.touches && startPosEvent.touches[0] ? startPosEvent.touches[0].clientX : startPosEvent.clientX;
+    startY = startPosEvent.touches && startPosEvent.touches[0] ? startPosEvent.touches[0].clientX : startPosEvent.clientY;
+    endX   = endPosEvent.touches && endPosEvent.touches[0] ?   endPosEvent.touches[0].clientY   : endPosEvent.clientX;
+    endY   = endPosEvent.touches && endPosEvent.touches[0] ?   endPosEvent.touches[0].clientY   : endPosEvent.clientY;
 
     move.x      = endX - startX;
     move.y      = endY - startY;

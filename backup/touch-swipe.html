@@ -31,9 +31,9 @@
     <li>swipe-down
   </ul>
 
-  <div id="el-1" class="swipable">Swipe Here</div> <br/><br/><br/>
-  <div id="el-2" class="swipable">Swipe Here</div> <br/><br/><br/>
-  <div id="el-3" class="swipable">Swipe Here</div> <br/><br/><br/>
+  <div class="swipable">Swipe Here</div>
+  <div class="swipable">Swipe Here</div>
+  <div class="swipable">Swipe Here</div>
   <script>
     let els = [document.body].concat(Array.from(document.querySelectorAll('.swipable')));
     new TouchSwipe(els, {minMove: 50});
