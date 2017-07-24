@@ -136,8 +136,10 @@
     });
   </script>
 
-  Code:
-  <script>document.write('<pre>'+document.querySelector('#tap-hold-script').innerHTML+'</pre>')</script>
+  Code: <pre id="tap-hold-code"></pre>
+  <script> 
+  document.querySelector('#tap-hold-code').innerHTML = document.querySelector('#tap-hold-script').innerHTML;
+  </script>
    
 
   <!-- Drag Test Only -->
@@ -172,8 +174,10 @@
     });
   </script>
 
-  Code:
-  <script>document.write('<pre>'+document.querySelector('#drag-script').innerHTML+'</pre>')</script>
+  Code: <pre id="drag-code"></pre>
+  <script> 
+  document.querySelector('#drag-code').innerHTML = document.querySelector('#drag-script').innerHTML;
+  </script>
 
   <!-- Drag And Drop Test -->
   <h2> Drop </h2>
@@ -207,7 +211,10 @@
   </script>
 
   Code:
-  <script>document.write('<pre>'+document.querySelector('#drag-drop-script').innerHTML+'</pre>')</script>
+ <pre id="drag-drop-code"></pre>
+  <script> 
+  document.querySelector('#drag-drop-code').innerHTML = document.querySelector('#drag-drop-script').innerHTML;
+  </script>
 
   <!-- Swipe Test -->
   <h2> Swipe </h2>
@@ -240,7 +247,11 @@
   </script>
 
   Code:
-  <script>document.write('<pre>'+document.querySelector('#swipe-script').innerHTML+'</pre>')</script>
+  <pre id="swipe-code"></pre>
+  <script> 
+  document.querySelector('#swipe-code').innerHTML = document.querySelector('#swipe-script').innerHTML;
+  </script>
+ 
 </body>
 
 </html>
