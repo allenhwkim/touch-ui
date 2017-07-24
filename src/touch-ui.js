@@ -53,7 +53,6 @@ class TouchUI {
   }
 
   touchStartHandler(e) {
-    console.log(e.type);
     this.startPosEvent = e;
     this.startAt = (new Date()).getTime();
     this.holeHappened = false;
@@ -83,7 +82,6 @@ class TouchUI {
   }
 
   touchEndHandler(e) {
-    console.log(e);
     this.endPosEvent = e;
     if (this.getMove().length < TouchUI.SMALL_MOVE) { //if little moved
       let eventName = 
@@ -96,7 +94,6 @@ class TouchUI {
   }
 
   touchResetHandler(e) {
-    console.log('reset');
     this.startPosEvent = null;
     this.startAt = null;
     this.prevPosEvent = null;
@@ -114,7 +111,6 @@ class TouchUI {
   }
 
   getMove() {
-    console.log('getMove', this.startPosEvent, this.endPosEvent)
     return TouchUI.calcMove(this.startPosEvent, this.endPosEvent);
   }
 
@@ -222,23 +218,27 @@ TouchUI.disableDefaultTouchBehaviour = function(el) {
 
 TouchUI.calcMove = function(startPosEvent, endPosEvent) {
   let move = { x:0, y:0, length: 0, direction: null };
-  let startX, startY, endX, endY;
-  if (startPosEvent && endPosEvent) {
-    startX = startPosEvent.touches && startPosEvent.touches[0] ? startPosEvent.touches[0].clientX : startPosEvent.clientX;
-    startY = startPosEvent.touches && startPosEvent.touches[0] ? startPosEvent.touches[0].clientX : startPosEvent.clientY;
-    endX   = endPosEvent.touches && endPosEvent.touches[0] ?   endPosEvent.touches[0].clientY   : endPosEvent.clientX;
-    endY   = endPosEvent.touches && endPosEvent.touches[0] ?   endPosEvent.touches[0].clientY   : endPosEvent.clientY;
+  let staPos, endPos, startX, startY, endX, endY, moveX, moveY;
 
-    move.x      = endX - startX;
-    move.y      = endY - startY;
-    move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
-    let moveX = Math.abs(move.x);
-    let moveY = Math.abs(move.y);
+  if (startPosEvent && endPosEvent) {
+    staPos = startPosEvent.touches && startPosEvent.touches[0] ? startPosEvent.touches[0] : 
+             startPosEvent.changedTouches && startPosEvent.changedTouches[0] ? startPosEvent.changedTouches[0] : 
+             startPosEvent;
+    endPos = endPosEvent.touches && endPosEvent.touches[0] ? endPosEvent.touches[0] : 
+             endPosEvent.changedTouches && endPosEvent.changedTouches[0] ? endPosEvent.changedTouches[0] : 
+             endPosEvent;
+
+    [startX, startY] = [staPos.clientX, staPos.clientY];
+    [endX, endY]     = [endPos.clientX, endPos.clientY];
+
+    [move.x, move.y] = [endX - startX, endY - startY];
+    [moveX, moveY]   = [Math.abs(move.x), Math.abs(move.y)];
     move.direction = 
       (moveX >  moveY) && (startX >  endX) ? 'left' :
       (moveX >  moveY) && (startX <= endX) ? 'right' :
       (moveX <= moveY) && (startY >  endY) ? 'up' :
       (moveX <= moveY) && (startY <= endY) ? 'down' : null;
+    move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
   }
   return move;
 }
