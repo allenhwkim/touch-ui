@@ -124,7 +124,7 @@ TouchUI.isTouch = function() {
 
 TouchUI.SMALL_MOVE = 10;    //small movement; default 10px
 TouchUI.HOLD_TIME  = 100;   //time in milliseconds that hold event fires, default 100ms
-TouchUI.LAST_EVENT_RESET_TIME = 200; //time in milliseconds that the last event should be remembered. default 200ms
+TouchUI.LAST_EVENT_RESET_TIME = 300; //time in milliseconds that the last event should be remembered. default 200ms
 
 TouchUI.touchStart = TouchUI.isTouch() ? 'touchstart' : 'mousedown'; 
 TouchUI.touchMove  = TouchUI.isTouch() ? 'touchmove'  : 'mousemove';
