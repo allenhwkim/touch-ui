@@ -2,6 +2,8 @@ Touch-UI
 ---------
 Fire cross-browser convenient touch events
 
+Tested with ![](https://ci.testling.com/_/images/chrome.png) ![](https://ci.testling.com/_/images/firefox.png) ![](https://ci.testling.com/_/images/safari.png) ![](https://ci.testling.com/_/images/iphone.png) ![](https://ci.testling.com/_/images/ipad.png) ![](https://ci.testling.com/_/images/android-browser.png)
+
 [DEMO](https://rawgit.com/allenhwkim/touch-ui/master/demo.html)
 
 Installation

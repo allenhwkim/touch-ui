@@ -3,7 +3,7 @@
 <head>
   <!-- user-scalable=no to prevent 300ms delay -->
   <meta name="viewport" content="width=device-width,user-scalable=no">
-  <script src="dist/touch-ui.min.js"></script>
+  <script src="dist/touch-ui.js"></script>
 
   <script>
     /* eslint-disable */
@@ -96,6 +96,7 @@
   <div id="movement-display"></div>
 
   <script>
+    /* eslint-disable */
     let touch = new TouchUI();
 
     // Movement Display
@@ -124,6 +125,7 @@
   <div style="clear:both"></div>
 
   <script id="tap-hold-script">
+    /* eslint-disable */
     //Tap and Hold Test 
     let tapHoldEl = document.querySelector('#tap-hold');
     let tapHoldEventNames = 
@@ -160,6 +162,7 @@
   <div style="clear:both"></div>
 
   <script id="drag-script">
+    /* eslint-disable */
     let dragEls = Array.from(document.querySelectorAll('.draggable'));
     new TouchDrag(dragEls[0], {axis: 'xy'});
     new TouchDrag(dragEls[1], {axis: 'x'});
@@ -194,6 +197,7 @@
   <div style="clear:both"></div>
 
   <script id="drag-drop-script">
+    /* eslint-disable */
     let dropDragEls = Array.from(document.querySelectorAll('.droppable .draggable'));
     let dropzoneEls = Array.from(document.querySelectorAll('.droppable'));
     new TouchDrag(dropDragEls);
@@ -234,6 +238,7 @@
   <div style="clear:both"></div>
 
   <script id="swipe-script">
+    /* eslint-disable */
     let els = Array.from(document.querySelectorAll('.swipable'));
     els.push(document.querySelector('#swipe-test'));
     new TouchSwipe(els);
@@ -247,7 +252,7 @@
 
   Code:
   <pre id="swipe-code"></pre>
-  <script> 
+  <script>
   document.querySelector('#swipe-code').innerHTML = document.querySelector('#swipe-script').innerHTML;
   </script>
  

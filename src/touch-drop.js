@@ -15,7 +15,6 @@
  */
 /* global TouchUI */
 export default class TouchDrop {
-
   constructor() {
     let args;
 

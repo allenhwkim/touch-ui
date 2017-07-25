@@ -135,41 +135,32 @@ TouchUI.touchLeave = TouchUI.isTouch() ? 'touchleave' : 'mouseleave';
 TouchUI.touchEnter = TouchUI.isTouch() ? 'touchenter' : 'mouseenter';
 
 TouchUI.fireTouchEvent = function (el, eventName, orgEvent, eventData) {
-  let touchEvent;
+  let customEvent;
 
-  // if org. event is not a TouchEvent, convert to TouchEvent to fire a TouchEvent
-  if (!(orgEvent instanceof TouchEvent)) {
-    if (orgEvent.button) { // e.button  left 0, middle 1, right 2
-      return false;
-    }
-    let touch = new  Touch({
-      identifier: Math.ceil(Math.random() * (Math.pow(10, 12))),
-      target: orgEvent.target,
-      clientX: orgEvent.clientX,
-      clientY: orgEvent.clientY,
-      screenX: orgEvent.screenX,
-      screenY: orgEvent.screenY,
-      pageX: orgEvent.pageX || 0,
-      pageY: orgEvent.pageY || 0,
-      radiusX: 0,
-      radiusY: 0,
-      rotationAngle: 0,
-      force: 0  // pressure applied
-    });
-
-    touchEvent = new TouchEvent(eventName, {
-      touches: [touch],
-      targetTouches: [touch],
-      changedTouches: [touch]
-    });
+  if (orgEvent.button) { // e.button  left 0, middle 1, right 2
+    return false;
   }
 
-  let customEvent = new TouchEvent(eventName, touchEvent);
+  customEvent = new CustomEvent(eventName, orgEvent);
 
   for (let key in (eventData || {})) {
     customEvent[key] = eventData[key];
   }
+
   customEvent.eventName = eventName;
+  if (orgEvent.clientX) {
+    customEvent.button  = orgEvent.button;
+    customEvent.which   = orgEvent.which;
+    customEvent.clientX = orgEvent.clientX;
+    customEvent.clientY = orgEvent.clientY;
+    customEvent.pageX   = orgEvent.pageX;
+    customEvent.pageY   = orgEvent.pageY;
+    customEvent.screenX = orgEvent.screenX;
+    customEvent.screenY = orgEvent.screenY;
+  }
+  orgEvent.touches && (customEvent.touches = orgEvent.touches);
+  orgEvent.changedTouches && (customEvent.changedTouches = orgEvent.changedTouches);
+  orgEvent.targetTouches && (customEvent.targetTouches = orgEvent.targetTouches);
 
   el.dispatchEvent(customEvent);
 
