@@ -11,8 +11,3 @@ Tested with
 <img src="https://ci.testling.com/_/images/android-browser.png" width=32 />
 
 [DEMO](https://rawgit.com/allenhwkim/touch-ui/master/demo.html)
-
-Installation
-=============
-
-    npm install touch-ui
