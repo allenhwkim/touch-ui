@@ -3,17 +3,16 @@
 <head>
   <!-- user-scalable=no to prevent 300ms delay -->
   <meta name="viewport" content="width=device-width,user-scalable=no">
-  <script src="src/touch-ui.js"></script>
-  <script src="src/touch-drag.js"></script>
-  <script src="src/touch-drop.js"></script>
-  <script src="src/touch-swipe.js"></script>
+  <script src="lib/Library.js"></script>
+
   <script>
-    function setBgText(el, text) {
+    function setBgText (el, text) {
       let str = ['url("data:image/svg+xml;utf8,',
         "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='100%' width='100%'>",
-        "  <text x='50%' y='50%' font-size='24' fill='grey' text-anchor='middle' alignment-baseline='middle'>"+text+"</text>",
+        "  <text x='50%' y='50%' font-size='24' fill='grey' text-anchor='middle' alignment-baseline='middle'>" + text + "</text>",
         "</svg>",
         '")'].join('');
+
       el.style.backgroundImage = str;
     }
   </script>
@@ -119,7 +118,6 @@
       <li>triple tap
       <li>hold
       <li>tap then hold
-      <li>double tap then hold
     </ul>
   </div>
   <div style="clear:both"></div>

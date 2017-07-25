@@ -5,7 +5,7 @@
  *   - drag-enter
  *   - drag-leave
  *   - drop
- * 
+ *
  * How it works
  *   1. When touch moves on document with dragging,
  *      check if dragging element is overlaying drappable element
@@ -13,16 +13,19 @@
  *   2. When touch ends on document with dragging
  *      if dragging element is overlaying a droppable element, fires `drop` event
  */
-class TouchDrop {
+/* global TouchUI */
+export default class TouchDrop {
 
   constructor() {
+    let args;
+
+    args = TouchUI.parseArguments(Array.from(arguments));
+
     this.dropzoneEls = [];
     this.options = {};
-    let args = TouchUI.parseArguments(Array.from(arguments));
     [this.dropzoneEls, this.options]  = [args.elements, args.options];
-    console.log('TouchDrop', this.dropzoneEls, this.options)
- 
-    this.touch = new TouchUI(); //sets basic touch events by watching start, move, and end
+
+    this.touch = new TouchUI(); // sets basic touch events by watching start, move, and end
     this.savedDropzone = null;
     this.init();
   }
@@ -34,19 +37,21 @@ class TouchDrop {
   }
 
   touchMoveHandler(e) {
-    if (this.touch.dragEl) { //current under dragging
-      let dropzone = TouchUI.getOverlappingEl(this.touch.dragEl, this.dropzoneEls);
-      if (dropzone && !this.savedDropzone) { //drag-enter
+    let dropzone;
+
+    if (this.touch.dragEl) { // current under dragging
+      dropzone = TouchUI.getOverlappingEl(this.touch.dragEl, this.dropzoneEls);
+      if (dropzone && !this.savedDropzone) { // drag-enter
         this.savedDropzone = dropzone;
         TouchUI.fireTouchEvent(this.savedDropzone, 'drag-enter', e, {dragEl: this.touch.dragEl});
-      } else if (this.savedDropzone && dropzone !== this.savedDropzone) { //drag-leave
+      } else if (this.savedDropzone && dropzone !== this.savedDropzone) { // drag-leave
         TouchUI.fireTouchEvent(this.savedDropzone, 'drag-leave', e, {dragEl: this.touch.dragEl});
         this.savedDropzone = null;
       }
     }
   }
 
-  touchEndHandler(e) { //current under dragging
+  touchEndHandler(e) { // current under dragging
     if (this.touch.dragEl) {
       if (this.savedDropzone) {
         TouchUI.fireTouchEvent(this.savedDropzone, 'drop', e, {dragEl: this.touch.dragEl});
