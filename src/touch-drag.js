@@ -79,7 +79,7 @@ export default class TouchDrag {
 
       this.dragStartStyle = {
         position: prevStyle.position,
-        left: prevStyle.left, 
+        left: prevStyle.left,
         top: prevStyle.top,
         margin: prevStyle.margin,
         bcr: e.target.getBoundingClientRect()

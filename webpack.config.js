@@ -5,7 +5,7 @@ const UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 const path = require('path');
 const env = require('yargs').argv.env; // use --env with webpack 2
 
-let libraryName = 'Library';
+let libraryName = 'touch-ui';
 
 let plugins = [], outputFile;
 
@@ -20,7 +20,7 @@ const config = {
   entry: __dirname + '/src/index.js',
   devtool: 'source-map',
   output: {
-    path: __dirname + '/lib',
+    path: __dirname + '/dist',
     filename: outputFile,
     library: libraryName,
     libraryTarget: 'umd',
@@ -33,11 +33,11 @@ const config = {
         loader: 'babel-loader',
         exclude: /(node_modules|bower_components)/
       },
-      // {
-      //   test: /(\.jsx|\.js)$/,
-      //   loader: 'eslint-loader',
-      //   exclude: /node_modules/
-      // }
+      {
+        test: /(\.jsx|\.js)$/,
+        loader: 'eslint-loader',
+        exclude: /node_modules/
+      }
     ]
   },
   resolve: {

@@ -3,10 +3,11 @@
 <head>
   <!-- user-scalable=no to prevent 300ms delay -->
   <meta name="viewport" content="width=device-width,user-scalable=no">
-  <script src="lib/Library.js"></script>
+  <script src="dist/touch-ui.min.js"></script>
 
   <script>
-    function setBgText (el, text) {
+    /* eslint-disable */
+    function setBgText(el, text) {
       let str = ['url("data:image/svg+xml;utf8,',
         "<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='100%' width='100%'>",
         "  <text x='50%' y='50%' font-size='24' fill='grey' text-anchor='middle' alignment-baseline='middle'>" + text + "</text>",
