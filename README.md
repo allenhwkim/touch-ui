@@ -28,3 +28,6 @@ Events
 * swipe-right
 * swipe-up
 * swipe-down
+* pan-start
+* pan-move
+* pan-end

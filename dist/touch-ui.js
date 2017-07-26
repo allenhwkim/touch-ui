@@ -83,7 +83,7 @@ return /******/ (function(modules) { // webpackBootstrap
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TouchSwipe = exports.TouchDrop = exports.TouchDrag = exports.TouchUI = undefined;
+exports.TouchPan = exports.TouchSwipe = exports.TouchDrop = exports.TouchDrag = exports.TouchUI = undefined;
 
 var _touchUi = __webpack_require__(1);
 
@@ -101,21 +101,21 @@ var _touchSwipe = __webpack_require__(4);
 
 var _touchSwipe2 = _interopRequireDefault(_touchSwipe);
 
+var _touchPan = __webpack_require__(5);
+
+var _touchPan2 = _interopRequireDefault(_touchPan);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.TouchUI = _touchUi2.default;
 exports.TouchDrag = _touchDrag2.default;
 exports.TouchDrop = _touchDrop2.default;
 exports.TouchSwipe = _touchSwipe2.default;
+exports.TouchPan = _touchPan2.default;
 
 // for browser environment with `<script>` tag
 
-if (window) {
-  window.TouchUI = _touchUi2.default;
-  window.TouchDrag = _touchDrag2.default;
-  window.TouchDrop = _touchDrop2.default;
-  window.TouchSwipe = _touchSwipe2.default;
-}
+window && (window.TouchUI = _touchUi2.default);
 
 /***/ }),
 /* 1 */
@@ -438,46 +438,51 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Extends functionality of TouchUI
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Fires the following event to the given elements
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - drag-start
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - drag-move
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - drag-end
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * How it works
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   1. when hold happens, adds dragging listeners to document.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   2. with minimal touch moves of document, draggint starts.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      When drag starts
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      - it saves the element drag started
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      - it saves the style of the element
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      - change the style of the element(absolute positioning with no margin)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      With drag started and touch moves
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      - reposition the element, by changing left/top position
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   3. when touch move ends and there is dragging element
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      - resets the style of the element from saved style
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      - remove dragging listeners from the document
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _touchUi = __webpack_require__(1);
+
+var _touchUi2 = _interopRequireDefault(_touchUi);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/**
- * Extends functionality of TouchUI
- *
- * Fires the following event to the given elements
- *   - drag-start
- *   - drag-move
- *   - drag-end
- *
- * How it works
- *   1. when hold happens, adds dragging listeners to document.
- *   2. with minimal touch moves of document, draggint starts.
- *      When drag starts
- *      - it saves the element drag started
- *      - it saves the style of the element
- *      - change the style of the element(absolute positioning with no margin)
- *      With drag started and touch moves
- *      - reposition the element, by changing left/top position
- *   3. when touch move ends and there is dragging element
- *      - resets the style of the element from saved style
- *      - remove dragging listeners from the document
- */
-/* global TouchUI */
 var TouchDrag = function () {
   function TouchDrag() {
     _classCallCheck(this, TouchDrag);
 
     this.els = [];
     var defaultOptions = { axis: 'xy' };
-    var args = TouchUI.parseArguments(Array.from(arguments), defaultOptions);
+    var args = _touchUi2.default.parseArguments(Array.from(arguments), defaultOptions);
 
     var _ref = [args.elements, args.options];
     this.els = _ref[0];
     this.options = _ref[1];
 
 
-    this.options.minHoldTime && (TouchUI.HOLD_TIME = this.options.minHoldTime);
+    this.options.minHoldTime && (_touchUi2.default.HOLD_TIME = this.options.minHoldTime);
 
     this.touch; // singleton instance of TouchUI
     this.dragMoveFunc; //
@@ -493,12 +498,12 @@ var TouchDrag = function () {
     value: function init() {
       var _this = this;
 
-      this.touch = new TouchUI(); // sets basic touch events by watching start, move, and end
+      this.touch = new _touchUi2.default(); // sets basic touch events by watching start, move, and end
       this.dragMoveFunc = this.dragMoveHandler.bind(this);
       this.dragEndFunc = this.dragEndHandler.bind(this);
 
       this.els.forEach(function (el) {
-        TouchUI.disableDefaultTouchBehaviour(el);
+        _touchUi2.default.disableDefaultTouchBehaviour(el);
         el.addEventListener('hold', function (e) {
           return _this.addDragListeners(document.body);
         });
@@ -512,16 +517,16 @@ var TouchDrag = function () {
   }, {
     key: 'addDragListeners',
     value: function addDragListeners(el) {
-      el.addEventListener(TouchUI.touchMove, this.dragMoveFunc);
-      el.addEventListener(TouchUI.touchEnd, this.dragEndFunc);
-      el.addEventListener(TouchUI.touchLeave, this.dragEndFunc);
+      el.addEventListener(_touchUi2.default.touchMove, this.dragMoveFunc);
+      el.addEventListener(_touchUi2.default.touchEnd, this.dragEndFunc);
+      el.addEventListener(_touchUi2.default.touchLeave, this.dragEndFunc);
     }
   }, {
     key: 'removeEventListeners',
     value: function removeEventListeners(el) {
-      el.removeEventListener(TouchUI.touchMove, this.dragMoveFunc);
-      el.removeEventListener(TouchUI.touchEnd, this.dragEndFunc);
-      el.removeEventListener(TouchUI.touchLeave, this.dragEndFunc);
+      el.removeEventListener(_touchUi2.default.touchMove, this.dragMoveFunc);
+      el.removeEventListener(_touchUi2.default.touchEnd, this.dragEndFunc);
+      el.removeEventListener(_touchUi2.default.touchLeave, this.dragEndFunc);
     }
   }, {
     key: 'dragMoveHandler',
@@ -533,11 +538,11 @@ var TouchDrag = function () {
 
       if (this.dragStartAt) {
         // if drag started
-        TouchUI.fireTouchEvent(this.touch.dragEl, 'drag-move', e);
+        _touchUi2.default.fireTouchEvent(this.touch.dragEl, 'drag-move', e);
       } else {
         this.dragStartAt = new Date().getTime();
         this.touch.dragEl = e.target;
-        TouchUI.fireTouchEvent(e.target, 'drag-start', e);
+        _touchUi2.default.fireTouchEvent(e.target, 'drag-start', e);
         prevStyle = window.getComputedStyle(e.target, null);
 
         this.dragStartStyle = {
@@ -565,7 +570,7 @@ var TouchDrag = function () {
         this.touch.dragEl.style.left = this.dragStartStyle.left;
         this.touch.dragEl.style.top = this.dragStartStyle.top;
         this.touch.dragEl.style.margin = this.dragStartStyle.margin;
-        TouchUI.fireTouchEvent(this.touch.dragEl, 'drag-end', e);
+        _touchUi2.default.fireTouchEvent(this.touch.dragEl, 'drag-end', e);
       }
 
       this.removeEventListeners(document.body);
@@ -578,6 +583,13 @@ var TouchDrag = function () {
 
   return TouchDrag;
 }();
+
+/* alias of `new TouchDrag(..)` */
+
+
+_touchUi2.default.draggable = function () {
+  return new (Function.prototype.bind.apply(TouchDrag, [null].concat(Array.prototype.slice.call(arguments))))();
+};
 
 exports.default = TouchDrag;
 module.exports = exports['default'];
@@ -593,33 +605,38 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Drop functionality that extends functionality of TouchUI
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Fires the following event to the given elements
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - drag-enter
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - drag-leave
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - drop
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * How it works
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   1. When touch moves on document with dragging,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      check if dragging element is overlaying drappable element
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      If so, fire `drag-enter` event. If not, fire `drag-leave` event accordingly
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   2. When touch ends on document with dragging
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      if dragging element is overlaying a droppable element, fires `drop` event
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _touchUi = __webpack_require__(1);
+
+var _touchUi2 = _interopRequireDefault(_touchUi);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/**
- * Drop functionality that extends functionality of TouchUI
- *
- * Fires the following event to the given elements
- *   - drag-enter
- *   - drag-leave
- *   - drop
- *
- * How it works
- *   1. When touch moves on document with dragging,
- *      check if dragging element is overlaying drappable element
- *      If so, fire `drag-enter` event. If not, fire `drag-leave` event accordingly
- *   2. When touch ends on document with dragging
- *      if dragging element is overlaying a droppable element, fires `drop` event
- */
-/* global TouchUI */
 var TouchDrop = function () {
   function TouchDrop() {
     _classCallCheck(this, TouchDrop);
 
     var args = void 0;
 
-    args = TouchUI.parseArguments(Array.from(arguments));
+    args = _touchUi2.default.parseArguments(Array.from(arguments));
 
     this.dropzoneEls = [];
     this.options = {};
@@ -628,7 +645,7 @@ var TouchDrop = function () {
     this.options = _ref[1];
 
 
-    this.touch = new TouchUI(); // sets basic touch events by watching start, move, and end
+    this.touch = new _touchUi2.default(); // sets basic touch events by watching start, move, and end
     this.savedDropzone = null;
     this.init();
   }
@@ -636,9 +653,9 @@ var TouchDrop = function () {
   _createClass(TouchDrop, [{
     key: 'init',
     value: function init() {
-      document.body.addEventListener(TouchUI.touchMove, this.touchMoveHandler.bind(this));
-      document.body.addEventListener(TouchUI.touchLeave, this.touchLeaveHandler.bind(this));
-      document.body.addEventListener(TouchUI.touchEnd, this.touchEndHandler.bind(this));
+      document.body.addEventListener(_touchUi2.default.touchMove, this.touchMoveHandler.bind(this));
+      document.body.addEventListener(_touchUi2.default.touchLeave, this.touchLeaveHandler.bind(this));
+      document.body.addEventListener(_touchUi2.default.touchEnd, this.touchEndHandler.bind(this));
     }
   }, {
     key: 'touchMoveHandler',
@@ -647,14 +664,14 @@ var TouchDrop = function () {
 
       if (this.touch.dragEl) {
         // current under dragging
-        dropzone = TouchUI.getOverlappingEl(this.touch.dragEl, this.dropzoneEls);
+        dropzone = _touchUi2.default.getOverlappingEl(this.touch.dragEl, this.dropzoneEls);
         if (dropzone && !this.savedDropzone) {
           // drag-enter
           this.savedDropzone = dropzone;
-          TouchUI.fireTouchEvent(this.savedDropzone, 'drag-enter', e, { dragEl: this.touch.dragEl });
+          _touchUi2.default.fireTouchEvent(this.savedDropzone, 'drag-enter', e, { dragEl: this.touch.dragEl });
         } else if (this.savedDropzone && dropzone !== this.savedDropzone) {
           // drag-leave
-          TouchUI.fireTouchEvent(this.savedDropzone, 'drag-leave', e, { dragEl: this.touch.dragEl });
+          _touchUi2.default.fireTouchEvent(this.savedDropzone, 'drag-leave', e, { dragEl: this.touch.dragEl });
           this.savedDropzone = null;
         }
       }
@@ -665,7 +682,7 @@ var TouchDrop = function () {
       // current under dragging
       if (this.touch.dragEl) {
         if (this.savedDropzone) {
-          TouchUI.fireTouchEvent(this.savedDropzone, 'drop', e, { dragEl: this.touch.dragEl });
+          _touchUi2.default.fireTouchEvent(this.savedDropzone, 'drop', e, { dragEl: this.touch.dragEl });
         }
       }
       this.dropzone && (this.dropzone = null);
@@ -679,6 +696,12 @@ var TouchDrop = function () {
 
   return TouchDrop;
 }();
+/* alias of `new TouchDrag(..)` */
+
+
+_touchUi2.default.droppable = function () {
+  return new (Function.prototype.bind.apply(TouchDrop, [null].concat(Array.prototype.slice.call(arguments))))();
+};
 
 exports.default = TouchDrop;
 module.exports = exports['default'];
@@ -694,24 +717,29 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Swipe functionality that extends functionality of TouchUI
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Fires the following event to the given elements
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - swipe-up
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - swipe-down
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - swipe-left
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - swipe-right
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * How it works
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   1. When touch moves on the given element WITHOUT any dragging,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      fires swipe events
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _touchUi = __webpack_require__(1);
+
+var _touchUi2 = _interopRequireDefault(_touchUi);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-/**
- * Swipe functionality that extends functionality of TouchUI
- *
- * Fires the following event to the given elements
- *   - swipe-up
- *   - swipe-down
- *   - swipe-left
- *   - swipe-right
- *
- * How it works
- *   1. When touch moves on the given element WITHOUT any dragging,
- *      fires swipe events
- */
-/* global TouchUI */
 var TouchSwipe = function () {
   function TouchSwipe() {
     _classCallCheck(this, TouchSwipe);
@@ -720,13 +748,13 @@ var TouchSwipe = function () {
         args = void 0;
 
     defaultOptions = { minMove: 50 };
-    args = TouchUI.parseArguments(Array.from(arguments), defaultOptions);
+    args = _touchUi2.default.parseArguments(Array.from(arguments), defaultOptions);
     var _ref = [args.elements, args.options];
     this.els = _ref[0];
     this.options = _ref[1];
 
 
-    this.touch = new TouchUI(); // sets basic touch events by watching start, move, and end
+    this.touch = new _touchUi2.default(); // sets basic touch events by watching start, move, and end
     this.init();
   }
 
@@ -736,8 +764,8 @@ var TouchSwipe = function () {
       var _this = this;
 
       this.els.forEach(function (el) {
-        TouchUI.disableDefaultTouchBehaviour(el);
-        el.addEventListener(TouchUI.touchMove, _this.touchMoveHandler.bind(_this), { passive: true });
+        _touchUi2.default.disableDefaultTouchBehaviour(el);
+        el.addEventListener(_touchUi2.default.touchMove, _this.touchMoveHandler.bind(_this), { passive: true });
       });
     }
   }, {
@@ -751,7 +779,7 @@ var TouchSwipe = function () {
         move = this.touch.getMove();
         if (move.length > this.options.minMove) {
           eventName = 'swipe-' + move.direction;
-          TouchUI.fireTouchEvent(e.target, eventName, e);
+          _touchUi2.default.fireTouchEvent(e.target, eventName, e);
         }
       }
     }
@@ -760,7 +788,143 @@ var TouchSwipe = function () {
   return TouchSwipe;
 }();
 
+// alias of `new TouchSwipe(...)`
+
+
+_touchUi2.default.swipable = function () {
+  return new (Function.prototype.bind.apply(TouchSwipe, [null].concat(Array.prototype.slice.call(arguments))))();
+};
+
 exports.default = TouchSwipe;
+module.exports = exports['default'];
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Extends functionality of TouchUI
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Fires the following event to the given elements
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - pan-start
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - pan-move
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - pan-end
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * How it works
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   1. when hold happens, adds panning listeners to the element
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   2. with minimal touch moves on the element, it fires `pan-start`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      With pan started and touch moves, it fires `pan-move`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   3. when touch move ends and there is panning element, it fires `pan-end`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _touchUi = __webpack_require__(1);
+
+var _touchUi2 = _interopRequireDefault(_touchUi);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var TouchPan = function () {
+  function TouchPan() {
+    _classCallCheck(this, TouchPan);
+
+    this.els = [];
+    var args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)));
+
+    var _ref = [args.elements, args.options];
+    this.els = _ref[0];
+    this.options = _ref[1];
+
+
+    this.touch; // singleton instance of TouchUI
+    this.panStartAt; // time of hold + move happened
+
+    this.handlers = {
+      start: this.addPanListeners.bind(this),
+      move: this.panMoveHandler.bind(this),
+      end: this.panEndHandler.bind(this)
+    };
+
+    this.init();
+  }
+
+  _createClass(TouchPan, [{
+    key: 'init',
+    value: function init() {
+      var _this = this;
+
+      this.touch = new _touchUi2.default(); // sets basic touch events by watching start, move, and end
+      this.panMoveFunc = this.handlers.move;
+      this.panEndFunc = this.handlers.end;
+
+      this.els.forEach(function (el) {
+        _touchUi2.default.disableDefaultTouchBehaviour(el);
+        el.addEventListener(_touchUi2.default.touchStart, _this.handlers.start);
+      });
+
+      this.panStartAt = null;
+    }
+
+    // when touch starts add pan-related listeners
+
+  }, {
+    key: 'addPanListeners',
+    value: function addPanListeners(e) {
+      e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move);
+      e.target.addEventListener(_touchUi2.default.touchEnd, this.handlers.end);
+      e.target.addEventListener(_touchUi2.default.touchLeave, this.handlers.end);
+    }
+  }, {
+    key: 'removePanListeners',
+    value: function removePanListeners(el) {
+      el.removeEventListener(_touchUi2.default.touchMove, this.handlers.move);
+      el.removeEventListener(_touchUi2.default.touchEnd, this.handlers.end);
+      el.removeEventListener(_touchUi2.default.touchLeave, this.handlers.end);
+    }
+  }, {
+    key: 'panMoveHandler',
+    value: function panMoveHandler(e) {
+      var eventData = { move: this.touch.getMove(), lastMove: this.touch.lastMove };
+
+      if (this.panStartAt) {
+        // if pan started
+        _touchUi2.default.fireTouchEvent(e.target, 'pan-move', e, eventData);
+      } else {
+        _touchUi2.default.fireTouchEvent(e.target, 'pan-start', e, eventData);
+        this.panStartAt = new Date().getTime();
+      }
+    }
+  }, {
+    key: 'panEndHandler',
+    value: function panEndHandler(e) {
+      this.panStartAt && _touchUi2.default.fireTouchEvent(e.target, 'pan-end', e);
+      this.removePanListeners(e.target);
+
+      // reset pan-related variables
+      this.panStartAt = null;
+    }
+  }]);
+
+  return TouchPan;
+}();
+
+/* alias of `new TouchPan(..)` */
+
+
+_touchUi2.default.pannable = function () {
+  return new (Function.prototype.bind.apply(TouchPan, [null].concat(Array.prototype.slice.call(arguments))))();
+};
+
+exports.default = TouchPan;
 module.exports = exports['default'];
 
 /***/ })

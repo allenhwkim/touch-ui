@@ -16,6 +16,9 @@
 
       el.style.backgroundImage = str;
     }
+    function showScript(source, target) {
+      document.querySelector(source).innerHTML = document.querySelector(target).innerHTML;
+    }
   </script>
 
   <style>
@@ -93,23 +96,8 @@
 </head>
 <body>
   <h1> Touch UI </h1>
-  <div id="movement-display"></div>
 
-  <script>
-    /* eslint-disable */
-    let touch = new TouchUI();
-
-    // Movement Display
-    [TouchUI.touchMove, TouchUI.touchEnd].forEach(eventName => {
-      document.body.addEventListener(eventName, e => {
-        document.querySelector('#movement-display').innerHTML = `
-            Total Movement: ${JSON.stringify(touch.getMove())}<br/>
-            LastMovement: ${JSON.stringify(touch.lastMove)} `;
-      });
-    });
-  </script>
-
-    <!-- Tap/Hold Test -->
+  <!-- Tap/Hold Test -->
   <h2> Tap/Hold </h2>
   <div id="tap-hold" class="touch-box" style="height:200px"></div>
   <div class="instruction">
@@ -138,10 +126,7 @@
   </script>
 
   Code: <pre id="tap-hold-code"></pre>
-  <script> 
-  document.querySelector('#tap-hold-code').innerHTML = document.querySelector('#tap-hold-script').innerHTML;
-  </script>
-   
+  <script>showScript('#tap-hold-code', '#tap-hold-script')</script>
 
   <!-- Drag Test Only -->
   <h2> Drag </h2>
@@ -164,9 +149,9 @@
   <script id="drag-script">
     /* eslint-disable */
     let dragEls = Array.from(document.querySelectorAll('.draggable'));
-    new TouchDrag(dragEls[0], {axis: 'xy'});
-    new TouchDrag(dragEls[1], {axis: 'x'});
-    new TouchDrag(dragEls[2], {axis: 'y'});
+    TouchUI.draggable(dragEls[0], {axis: 'xy'});
+    TouchUI.draggable(dragEls[1], {axis: 'x'});
+    TouchUI.draggable(dragEls[2], {axis: 'y'});
 
     dragEls.forEach(el => {
       el.addEventListener('hold', e => setBgText(el, 'drag-start') ); //intentionally wrong :)
@@ -177,9 +162,7 @@
   </script>
 
   Code: <pre id="drag-code"></pre>
-  <script> 
-  document.querySelector('#drag-code').innerHTML = document.querySelector('#drag-script').innerHTML;
-  </script>
+  <script>showScript('#drag-code', '#drag-script')</script>
 
   <!-- Drag And Drop Test -->
   <h2> Drop </h2>
@@ -200,8 +183,8 @@
     /* eslint-disable */
     let dropDragEls = Array.from(document.querySelectorAll('.droppable .draggable'));
     let dropzoneEls = Array.from(document.querySelectorAll('.droppable'));
-    new TouchDrag(dropDragEls);
-    new TouchDrop(dropzoneEls)
+    TouchUI.draggable(dropDragEls);
+    TouchUI.droppable(dropzoneEls);
 
     dropzoneEls.forEach(el => {
       el.addEventListener('drag-enter', e => setBgText(el, e.eventName) );
@@ -213,11 +196,9 @@
     });
   </script>
 
-  Code:
+ Code:
  <pre id="drag-drop-code"></pre>
-  <script> 
-  document.querySelector('#drag-drop-code').innerHTML = document.querySelector('#drag-drop-script').innerHTML;
-  </script>
+  <script>showScript('#drag-drop-code', '#drag-drop-script')</script> 
 
   <!-- Swipe Test -->
   <h2> Swipe </h2>
@@ -241,7 +222,7 @@
     /* eslint-disable */
     let els = Array.from(document.querySelectorAll('.swipable'));
     els.push(document.querySelector('#swipe-test'));
-    new TouchSwipe(els);
+    TouchUI.swipable(els);
 
     els.forEach(el => {
       ['up', 'down', 'left', 'right'].forEach(move => {
@@ -252,10 +233,55 @@
 
   Code:
   <pre id="swipe-code"></pre>
-  <script>
-  document.querySelector('#swipe-code').innerHTML = document.querySelector('#swipe-script').innerHTML;
-  </script>
+  <script>showScript('#swipe-code', '#swipe-script')</script>
  
+  <!-- Pan Test -->
+  <h2> Pan </h2>
+  <div id="pan-test" class="touch-box" style="background:url(http://lorempixel.com/1024/768/nature/)">
+  </div>
+  <div class="instruction">
+    Pan around on the box left
+  </div>
+  <div style="clear:both"></div>
+
+  <script id="pan-script">
+    /* eslint-disable */
+    let panTestEl = document.querySelector('#pan-test');
+    TouchUI.pannable(panTestEl);
+
+    let x, y, startX, startY;
+    panTestEl.addEventListener('pan-start', e => {
+     x = panTestEl.style.backgroundPositionX;
+     startX = Number.isNaN(parseInt(x)) ? 0 : parseInt(x);
+     y = panTestEl.style.backgroundPositionY;
+     startY = Number.isNaN(parseInt(y)) ? 0 : parseInt(y);
+    });
+
+    panTestEl.addEventListener('pan-move', e => {
+      panTestEl.style.backgroundPositionX = startX + e.move.x + 'px';
+      panTestEl.style.backgroundPositionY = startY + e.move.y + 'px';
+      panTestEl.innerHTML = `${e.eventName} ${e.move ? e.move.direction :''}`;
+    });
+  </script>
+
+  Code:
+  <pre id="pan-code"></pre>
+  <script>showScript('#pan-code', '#pan-script')</script>
+
+  <div id="movement-display"></div>
+  <script>
+    /* eslint-disable */
+    let touch = new TouchUI();
+
+    // Movement Display
+    [TouchUI.touchMove, TouchUI.touchEnd].forEach(eventName => {
+      document.body.addEventListener(eventName, e => {
+        document.querySelector('#movement-display').innerHTML = `
+            Total Movement: ${JSON.stringify(touch.getMove())}<br/>
+            LastMovement: ${JSON.stringify(touch.lastMove)} `;
+      });
+    });
+  </script>
 </body>
 
 </html>

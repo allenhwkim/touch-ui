@@ -4,7 +4,7 @@
   "description": "provides custom touch events",
   "license": "MIT",
   "module": "dist/index.js",
-  "main": "lib/library.js",
+  "main": "dist/touch-ui.js",
   "scripts": {
     "clean": "rimraf dist",
     "build": "webpack --env build",

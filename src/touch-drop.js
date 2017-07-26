@@ -13,8 +13,9 @@
  *   2. When touch ends on document with dragging
  *      if dragging element is overlaying a droppable element, fires `drop` event
  */
-/* global TouchUI */
-export default class TouchDrop {
+import TouchUI from './touch-ui';
+
+class TouchDrop {
   constructor() {
     let args;
 
@@ -64,3 +65,9 @@ export default class TouchDrop {
   }
 
 }
+/* alias of `new TouchDrag(..)` */
+TouchUI.droppable = function () {
+  return new TouchDrop(...arguments);
+};
+
+export default TouchDrop;

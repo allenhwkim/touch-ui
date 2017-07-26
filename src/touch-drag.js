@@ -19,8 +19,9 @@
  *      - resets the style of the element from saved style
  *      - remove dragging listeners from the document
  */
-/* global TouchUI */
-export default class TouchDrag {
+import TouchUI from './touch-ui';
+
+class TouchDrag {
 
   constructor() {
     this.els = [];
@@ -112,3 +113,10 @@ export default class TouchDrag {
   }
 
 }
+
+/* alias of `new TouchDrag(..)` */
+TouchUI.draggable = function () {
+  return new TouchDrag(...arguments);
+};
+
+export default TouchDrag;

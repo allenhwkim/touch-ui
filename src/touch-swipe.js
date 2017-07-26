@@ -11,8 +11,9 @@
  *   1. When touch moves on the given element WITHOUT any dragging,
  *      fires swipe events
  */
-/* global TouchUI */
-export default class TouchSwipe {
+import TouchUI from './touch-ui';
+
+class TouchSwipe {
 
   constructor() {
     let defaultOptions, args;
@@ -45,3 +46,10 @@ export default class TouchSwipe {
   }
 
 }
+
+// alias of `new TouchSwipe(...)`
+TouchUI.swipable = function () {
+  return new TouchSwipe(...arguments);
+};
+
+export default TouchSwipe;
