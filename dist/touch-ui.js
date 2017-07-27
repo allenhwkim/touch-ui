@@ -173,7 +173,7 @@ var TouchUI = function () {
     key: 'touchMoveHandler',
     value: function touchMoveHandler(e) {
       this.endTouches = e.changedTouches || [e];
-      this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches);
+      this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches, 0); // 0:index
       if (this.getMove().length > TouchUI.SMALL_MOVE) {
         // not a small movement
         clearTimeout(this.holdTimer);
@@ -217,7 +217,7 @@ var TouchUI = function () {
   }, {
     key: 'getMove',
     value: function getMove() {
-      return TouchUI.calcMove(this.startTouches, this.endTouches);
+      return TouchUI.calcMove(this.startTouches, this.endTouches, 0); // 0: index
     }
   }]);
 
@@ -310,22 +310,21 @@ TouchUI.disableDefaultTouchBehaviour = function (el) {
 };
 
 TouchUI.calcMove = function (startTouches, endTouches) {
+  var index = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
   var move = { x: 0, y: 0, length: 0, direction: null };
   var staPos = void 0,
       endPos = void 0,
       startX = void 0,
       startY = void 0,
       endX = void 0,
-      endY = void 0,
-      moveX = void 0,
-      moveY = void 0;
+      endY = void 0;
 
   if (startTouches && endTouches) {
     if (endTouches.length === 1) {
-      staPos = startTouches[0];
-      endPos = endTouches[0];
+      staPos = startTouches[index];
+      endPos = endTouches[index];
 
-      //TODO .. use getDirection
       var _ref = [staPos.clientX, staPos.clientY];
       startX = _ref[0];
       startY = _ref[1];
@@ -335,46 +334,40 @@ TouchUI.calcMove = function (startTouches, endTouches) {
       var _ref3 = [endX - startX, endY - startY];
       move.x = _ref3[0];
       move.y = _ref3[1];
-      var _ref4 = [Math.abs(move.x), Math.abs(move.y)];
-      moveX = _ref4[0];
-      moveY = _ref4[1];
 
-      move.direction = moveX > moveY && startX > endX ? 'left' : moveX > moveY && startX <= endX ? 'right' : moveX <= moveY && startY > endY ? 'up' : moveX <= moveY && startY <= endY ? 'down' : null;
-      //TODO  .. use getDistance
-      move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
-    } else if (endTouches.length === 2) {
-      // check if two finger distance has changed
-      var staDistance = TouchUI.getDistance(startTouches[0], startTouches[1]);
-      var endDistance = TouchUI.getDistance(startTouches[1], startTouches[2]);
-      var diff = endDistance - staDistance;
-      // .............
+
+      move.direction = TouchUI.getDirection(staPos, endPos);
+      move.length = TouchUI.getDistance(staPos, endPos);
     }
   }
   return move;
 };
 
-TouchUI.getDistance = function (x0, x1, y0, y1) {
-  var lengthX = Math.abs(x1 - x0);
-  var lengthY = Math.abs(y1 - x0);
-  return Math.sqrt(Math.pow(lengthX, 2) + Math.pow(lengthY, 2));
+TouchUI.getDistance = function (staPos, endPos) {
+  return Math.sqrt(Math.pow(staPos.clientX - endPos.clientX, 2) + Math.pow(staPos.clientY - endPos.clientY, 2));
 };
 
-//left, right, up, down
-TouchUI.getDirection = function (x0, y0, x1, y1) {
-  var moveX = void 0,
+// left, right, up, down
+TouchUI.getDirection = function (staPos, endPos) {
+  var startX = void 0,
+      startY = void 0,
+      endX = void 0,
+      endY = void 0,
+      moveX = void 0,
       moveY = void 0,
-      moveAbsX = void 0,
-      moveAbsY = void 0,
       direction = void 0;
 
-  moveX = x1 - x0;
-  moveY = y1 - y0;
-  var _ref5 = [Math.abs(moveX), Math.abs(moveY)];
-  moveAbsX = _ref5[0];
-  moveAbsY = _ref5[1];
+  var _ref4 = [staPos.clientX, staPos.clientY];
+  startX = _ref4[0];
+  startY = _ref4[1];
+  var _ref5 = [endPos.clientX, endPos.clientY];
+  endX = _ref5[0];
+  endY = _ref5[1];
+  var _ref6 = [Math.abs(endX - startX), Math.abs(endY - startY)];
+  moveX = _ref6[0];
+  moveY = _ref6[1];
 
-
-  direction = moveAbsX > moveAbsY && x0 > x1 ? 'left' : moveAbsX > moveAbsY && x0 <= x1 ? 'right' : moveAbsX <= moveAbsY && y0 > y1 ? 'up' : moveAbsX <= moveAbsY && y0 <= y1 ? 'down' : null;
+  direction = moveX > moveY && startX > endX ? 'left' : moveX > moveY && startX <= endX ? 'right' : moveX <= moveY && startY > endY ? 'up' : moveX <= moveY && startY <= endY ? 'down' : null;
 
   return direction;
 };

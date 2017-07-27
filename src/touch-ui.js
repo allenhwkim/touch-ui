@@ -74,7 +74,7 @@ class TouchUI {
 
   touchMoveHandler(e) {
     this.endTouches = e.changedTouches || [e];
-    this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches);
+    this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches, 0); // 0:index
     if (this.getMove().length > TouchUI.SMALL_MOVE) { // not a small movement
       clearTimeout(this.holdTimer);
       clearTimeout(this.tapTimer);
@@ -113,7 +113,7 @@ class TouchUI {
   }
 
   getMove() {
-    return TouchUI.calcMove(this.startTouches, this.endTouches);
+    return TouchUI.calcMove(this.startTouches, this.endTouches, 0); // 0: index
   }
 
 }
@@ -205,60 +205,48 @@ TouchUI.disableDefaultTouchBehaviour = function (el) {
   return el;
 };
 
-TouchUI.calcMove = function (startTouches, endTouches) {
+TouchUI.calcMove = function (startTouches, endTouches, index = 0) {
   let move = { x: 0, y: 0, length: 0, direction: null };
-  let staPos, endPos, startX, startY, endX, endY, moveX, moveY;
+  let staPos, endPos, startX, startY, endX, endY;
 
   if (startTouches && endTouches) {
     if (endTouches.length === 1) {
-      staPos = startTouches[0];
-      endPos = endTouches[0];
+      staPos = startTouches[index];
+      endPos = endTouches[index];
 
-      //TODO .. use getDirection
       [startX, startY] = [staPos.clientX, staPos.clientY];
       [endX, endY]     = [endPos.clientX, endPos.clientY];
-
       [move.x, move.y] = [endX - startX, endY - startY];
-      [moveX, moveY]   = [Math.abs(move.x), Math.abs(move.y)];
-      move.direction =
-        (moveX >  moveY) && (startX >  endX) ? 'left' :
-        (moveX >  moveY) && (startX <= endX) ? 'right' :
-        (moveX <= moveY) && (startY >  endY) ? 'up' :
-        (moveX <= moveY) && (startY <= endY) ? 'down' : null;
-      //TODO  .. use getDistance
-      move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
-    } else if (endTouches.length === 2) {
-      // check if two finger distance has changed
-      let staDistance = TouchUI.getDistance(startTouches[0], startTouches[1]);
-      let endDistance = TouchUI.getDistance(startTouches[1], startTouches[2]);
-      let diff = endDistance - staDistance;
-      // .............
+
+      move.direction = TouchUI.getDirection(staPos, endPos);
+      move.length    = TouchUI.getDistance(staPos, endPos);
     }
   }
   return move;
 };
 
-TouchUI.getDistance = function(x0, x1, y0, y1) {
-  let lengthX = Math.abs(x1 - x0);
-  let lengthY = Math.abs(y1 - x0);
-  return Math.sqrt(Math.pow(lengthX, 2) + Math.pow(lengthY, 2));
+TouchUI.getDistance = function (staPos, endPos) {
+  return Math.sqrt(
+    Math.pow(staPos.clientX - endPos.clientX, 2) +
+    Math.pow(staPos.clientY - endPos.clientY, 2));
 };
 
-//left, right, up, down
-TouchUI.getDirection = function(x0, y0, x1, y1) {
-  let moveX, moveY, moveAbsX, moveAbsY, direction;
+// left, right, up, down
+TouchUI.getDirection = function (staPos, endPos) {
+  let startX, startY, endX, endY, moveX, moveY, direction;
 
-  [moveX, moveY] = [x1 - x0, y1 - y0];
-  [moveAbsX, moveAbsY]   = [Math.abs(moveX), Math.abs(moveY)];
+  [startX, startY] = [staPos.clientX, staPos.clientY];
+  [endX, endY]     = [endPos.clientX, endPos.clientY];
 
+  [moveX, moveY]   = [Math.abs(endX - startX), Math.abs(endY - startY)];
   direction =
-    (moveAbsX >  moveAbsY) && (x0 >  x1) ? 'left' :
-    (moveAbsX >  moveAbsY) && (x0 <= x1) ? 'right' :
-    (moveAbsX <= moveAbsY) && (y0 >  y1) ? 'up' :
-    (moveAbsX <= moveAbsY) && (y0 <= y1) ? 'down' : null;
+    (moveX >  moveY) && (startX >  endX) ? 'left' :
+    (moveX >  moveY) && (startX <= endX) ? 'right' :
+    (moveX <= moveY) && (startY >  endY) ? 'up' :
+    (moveX <= moveY) && (startY <= endY) ? 'down' : null;
 
   return direction;
-}
+};
 
 TouchUI.parseArguments = function (args, options = {}) { // args is an array, Array.from(arguments), not arguments
   let parsed = {elements: [], options: options};
