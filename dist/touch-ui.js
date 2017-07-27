@@ -70,55 +70,11 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.TouchPan = exports.TouchSwipe = exports.TouchDrop = exports.TouchDrag = exports.TouchUI = undefined;
-
-var _touchUi = __webpack_require__(1);
-
-var _touchUi2 = _interopRequireDefault(_touchUi);
-
-var _touchDrag = __webpack_require__(2);
-
-var _touchDrag2 = _interopRequireDefault(_touchDrag);
-
-var _touchDrop = __webpack_require__(3);
-
-var _touchDrop2 = _interopRequireDefault(_touchDrop);
-
-var _touchSwipe = __webpack_require__(4);
-
-var _touchSwipe2 = _interopRequireDefault(_touchSwipe);
-
-var _touchPan = __webpack_require__(5);
-
-var _touchPan2 = _interopRequireDefault(_touchPan);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.TouchUI = _touchUi2.default;
-exports.TouchDrag = _touchDrag2.default;
-exports.TouchDrop = _touchDrop2.default;
-exports.TouchSwipe = _touchSwipe2.default;
-exports.TouchPan = _touchPan2.default;
-
-// for browser environment with `<script>` tag
-
-window && (window.TouchUI = _touchUi2.default);
-
-/***/ }),
-/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -154,11 +110,11 @@ var TouchUI = function () {
 
     if (!touchUIInstance) {
       touchUIInstance = this;
-      this.startPosEvent = null; // position touch started
-      this.startAt = null; // time touch  started
+      this.startTouches = null; // position touch started
+      this.prevTouches = null; // previous touch position when touch move
+      this.endTouches = null; // the current touch position
 
-      this.prevPosEvent = null; // previous touch position when touch move
-      this.endPosEvent = null; // the current touch position
+      this.startAt = null; // time touch  started
 
       this.lastTouchEventName = null; // name of last event. e.g. tap, double-tap
       this.lastTouchEventAt = null; // time of last event
@@ -197,7 +153,7 @@ var TouchUI = function () {
     value: function touchStartHandler(e) {
       var _this = this;
 
-      this.startPosEvent = e;
+      this.startTouches = e.changedTouches || [e];
       this.startAt = new Date().getTime();
       this.holeHappened = false;
 
@@ -211,24 +167,24 @@ var TouchUI = function () {
         _this.holdHappened = true;
         clearTimeout(_this.holdTimer);
       }, TouchUI.HOLD_TIME);
-      this.prevPosEvent = this.startPosEvent;
+      this.prevTouches = this.startTouches;
     }
   }, {
     key: 'touchMoveHandler',
     value: function touchMoveHandler(e) {
-      this.endPosEvent = e;
-      this.lastMove = TouchUI.calcMove(this.prevPosEvent, this.endPosEvent);
+      this.endTouches = e.changedTouches || [e];
+      this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches);
       if (this.getMove().length > TouchUI.SMALL_MOVE) {
         // not a small movement
         clearTimeout(this.holdTimer);
         clearTimeout(this.tapTimer);
       }
-      this.prevPosEvent = this.endPosEvent;
+      this.prevTouches = this.endTouches;
     }
   }, {
     key: 'touchEndHandler',
     value: function touchEndHandler(e) {
-      this.endPosEvent = e;
+      this.endTouches = e.changedTouches || [e];
       if (this.getMove().length < TouchUI.SMALL_MOVE) {
         // if little moved
         var eventName = this.lastTouchEventName === 'tap' ? 'double-tap' : this.lastTouchEventName === 'double-tap' ? 'triple-tap' : 'tap';
@@ -243,10 +199,10 @@ var TouchUI = function () {
     value: function touchResetHandler(e) {
       var _this2 = this;
 
-      this.startPosEvent = null;
+      this.startTouches = null;
       this.startAt = null;
-      this.prevPosEvent = null;
-      this.endPosEvent = null;
+      this.prevTouches = null;
+      this.endTouches = null;
       this.lastMove = null;
       this.holdHappened = false;
       clearTimeout(this.holdTimer);
@@ -261,15 +217,12 @@ var TouchUI = function () {
   }, {
     key: 'getMove',
     value: function getMove() {
-      return TouchUI.calcMove(this.startPosEvent, this.endPosEvent);
+      return TouchUI.calcMove(this.startTouches, this.endTouches);
     }
   }]);
 
   return TouchUI;
 }();
-
-exports.default = TouchUI;
-
 
 TouchUI.isTouch = function () {
   return 'ontouchstart' in window || navigator.MaxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
@@ -356,7 +309,7 @@ TouchUI.disableDefaultTouchBehaviour = function (el) {
   return el;
 };
 
-TouchUI.calcMove = function (startPosEvent, endPosEvent) {
+TouchUI.calcMove = function (startTouches, endTouches) {
   var move = { x: 0, y: 0, length: 0, direction: null };
   var staPos = void 0,
       endPos = void 0,
@@ -367,27 +320,63 @@ TouchUI.calcMove = function (startPosEvent, endPosEvent) {
       moveX = void 0,
       moveY = void 0;
 
-  if (startPosEvent && endPosEvent) {
-    staPos = startPosEvent.touches && startPosEvent.touches[0] ? startPosEvent.touches[0] : startPosEvent.changedTouches && startPosEvent.changedTouches[0] ? startPosEvent.changedTouches[0] : startPosEvent;
-    endPos = endPosEvent.touches && endPosEvent.touches[0] ? endPosEvent.touches[0] : endPosEvent.changedTouches && endPosEvent.changedTouches[0] ? endPosEvent.changedTouches[0] : endPosEvent;
+  if (startTouches && endTouches) {
+    if (endTouches.length === 1) {
+      staPos = startTouches[0];
+      endPos = endTouches[0];
 
-    var _ref = [staPos.clientX, staPos.clientY];
-    startX = _ref[0];
-    startY = _ref[1];
-    var _ref2 = [endPos.clientX, endPos.clientY];
-    endX = _ref2[0];
-    endY = _ref2[1];
-    var _ref3 = [endX - startX, endY - startY];
-    move.x = _ref3[0];
-    move.y = _ref3[1];
-    var _ref4 = [Math.abs(move.x), Math.abs(move.y)];
-    moveX = _ref4[0];
-    moveY = _ref4[1];
+      //TODO .. use getDirection
+      var _ref = [staPos.clientX, staPos.clientY];
+      startX = _ref[0];
+      startY = _ref[1];
+      var _ref2 = [endPos.clientX, endPos.clientY];
+      endX = _ref2[0];
+      endY = _ref2[1];
+      var _ref3 = [endX - startX, endY - startY];
+      move.x = _ref3[0];
+      move.y = _ref3[1];
+      var _ref4 = [Math.abs(move.x), Math.abs(move.y)];
+      moveX = _ref4[0];
+      moveY = _ref4[1];
 
-    move.direction = moveX > moveY && startX > endX ? 'left' : moveX > moveY && startX <= endX ? 'right' : moveX <= moveY && startY > endY ? 'up' : moveX <= moveY && startY <= endY ? 'down' : null;
-    move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
+      move.direction = moveX > moveY && startX > endX ? 'left' : moveX > moveY && startX <= endX ? 'right' : moveX <= moveY && startY > endY ? 'up' : moveX <= moveY && startY <= endY ? 'down' : null;
+      //TODO  .. use getDistance
+      move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
+    } else if (endTouches.length === 2) {
+      // check if two finger distance has changed
+      var staDistance = TouchUI.getDistance(startTouches[0], startTouches[1]);
+      var endDistance = TouchUI.getDistance(startTouches[1], startTouches[2]);
+      var diff = endDistance - staDistance;
+      // .............
+    }
   }
   return move;
+};
+
+TouchUI.getDistance = function (x0, x1, y0, y1) {
+  var lengthX = Math.abs(x1 - x0);
+  var lengthY = Math.abs(y1 - x0);
+  return Math.sqrt(Math.pow(lengthX, 2) + Math.pow(lengthY, 2));
+};
+
+//left, right, up, down
+TouchUI.getDirection = function (x0, y0, x1, y1) {
+  var moveX = void 0,
+      moveY = void 0,
+      moveAbsX = void 0,
+      moveAbsY = void 0,
+      direction = void 0;
+
+  moveX = x1 - x0;
+  moveY = y1 - y0;
+  var _ref5 = [Math.abs(moveX), Math.abs(moveY)];
+  moveAbsX = _ref5[0];
+  moveAbsY = _ref5[1];
+
+
+  direction = moveAbsX > moveAbsY && x0 > x1 ? 'left' : moveAbsX > moveAbsY && x0 <= x1 ? 'right' : moveAbsX <= moveAbsY && y0 > y1 ? 'up' : moveAbsX <= moveAbsY && y0 <= y1 ? 'down' : null;
+
+  return direction;
 };
 
 TouchUI.parseArguments = function (args) {
@@ -425,7 +414,53 @@ TouchUI.getOverlappingEl = function (el, candidates) {
   }
   return ret;
 };
+
+exports.default = TouchUI;
 module.exports = exports['default'];
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TouchPan = exports.TouchSwipe = exports.TouchDrop = exports.TouchDrag = exports.TouchUI = undefined;
+
+var _touchUi = __webpack_require__(0);
+
+var _touchUi2 = _interopRequireDefault(_touchUi);
+
+var _touchDrag = __webpack_require__(2);
+
+var _touchDrag2 = _interopRequireDefault(_touchDrag);
+
+var _touchDrop = __webpack_require__(3);
+
+var _touchDrop2 = _interopRequireDefault(_touchDrop);
+
+var _touchSwipe = __webpack_require__(4);
+
+var _touchSwipe2 = _interopRequireDefault(_touchSwipe);
+
+var _touchPan = __webpack_require__(5);
+
+var _touchPan2 = _interopRequireDefault(_touchPan);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.TouchUI = _touchUi2.default;
+exports.TouchDrag = _touchDrag2.default;
+exports.TouchDrop = _touchDrop2.default;
+exports.TouchSwipe = _touchSwipe2.default;
+exports.TouchPan = _touchPan2.default;
+
+// for browser environment with `<script>` tag
+
+window && (window.TouchUI = _touchUi2.default);
 
 /***/ }),
 /* 2 */
@@ -461,7 +496,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
 
-var _touchUi = __webpack_require__(1);
+var _touchUi = __webpack_require__(0);
 
 var _touchUi2 = _interopRequireDefault(_touchUi);
 
@@ -622,7 +657,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
 
-var _touchUi = __webpack_require__(1);
+var _touchUi = __webpack_require__(0);
 
 var _touchUi2 = _interopRequireDefault(_touchUi);
 
@@ -732,7 +767,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
 
-var _touchUi = __webpack_require__(1);
+var _touchUi = __webpack_require__(0);
 
 var _touchUi2 = _interopRequireDefault(_touchUi);
 
@@ -825,7 +860,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
 
-var _touchUi = __webpack_require__(1);
+var _touchUi = __webpack_require__(0);
 
 var _touchUi2 = _interopRequireDefault(_touchUi);
 
@@ -868,7 +903,7 @@ var TouchPan = function () {
 
       this.els.forEach(function (el) {
         _touchUi2.default.disableDefaultTouchBehaviour(el);
-        el.addEventListener(_touchUi2.default.touchStart, _this.handlers.start);
+        el.addEventListener(_touchUi2.default.touchStart, _this.handlers.start, { passive: true });
       });
 
       this.panStartAt = null;
@@ -879,7 +914,7 @@ var TouchPan = function () {
   }, {
     key: 'addPanListeners',
     value: function addPanListeners(e) {
-      e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move);
+      e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move, { passive: true });
       e.target.addEventListener(_touchUi2.default.touchEnd, this.handlers.end);
       e.target.addEventListener(_touchUi2.default.touchLeave, this.handlers.end);
     }

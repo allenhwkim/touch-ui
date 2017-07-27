@@ -12,16 +12,16 @@
  */
 let touchUIInstance;
 
-export default class TouchUI {
+class TouchUI {
 
   constructor() {
     if (!touchUIInstance) {
       touchUIInstance = this;
-      this.startPosEvent = null;  // position touch started
-      this.startAt = null;   // time touch  started
+      this.startTouches = null;  // position touch started
+      this.prevTouches = null;   // previous touch position when touch move
+      this.endTouches = null;    // the current touch position
 
-      this.prevPosEvent = null;   // previous touch position when touch move
-      this.endPosEvent = null;    // the current touch position
+      this.startAt = null;   // time touch  started
 
       this.lastTouchEventName = null; // name of last event. e.g. tap, double-tap
       this.lastTouchEventAt = null;   // time of last event
@@ -53,7 +53,7 @@ export default class TouchUI {
   }
 
   touchStartHandler(e) {
-    this.startPosEvent = e;
+    this.startTouches = e.changedTouches || [e];
     this.startAt = (new Date()).getTime();
     this.holeHappened = false;
 
@@ -69,21 +69,21 @@ export default class TouchUI {
       this.holdHappened = true;
       clearTimeout(this.holdTimer);
     }, TouchUI.HOLD_TIME);
-    this.prevPosEvent = this.startPosEvent;
+    this.prevTouches = this.startTouches;
   }
 
   touchMoveHandler(e) {
-    this.endPosEvent = e;
-    this.lastMove = TouchUI.calcMove(this.prevPosEvent, this.endPosEvent);
+    this.endTouches = e.changedTouches || [e];
+    this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches);
     if (this.getMove().length > TouchUI.SMALL_MOVE) { // not a small movement
       clearTimeout(this.holdTimer);
       clearTimeout(this.tapTimer);
     }
-    this.prevPosEvent = this.endPosEvent;
+    this.prevTouches = this.endTouches;
   }
 
   touchEndHandler(e) {
-    this.endPosEvent = e;
+    this.endTouches = e.changedTouches || [e];
     if (this.getMove().length < TouchUI.SMALL_MOVE) { // if little moved
       let eventName =
         this.lastTouchEventName === 'tap' ? 'double-tap' :
@@ -96,10 +96,10 @@ export default class TouchUI {
   }
 
   touchResetHandler(e) {
-    this.startPosEvent = null;
+    this.startTouches = null;
     this.startAt = null;
-    this.prevPosEvent = null;
-    this.endPosEvent = null;
+    this.prevTouches = null;
+    this.endTouches = null;
     this.lastMove = null;
     this.holdHappened = false;
     clearTimeout(this.holdTimer);
@@ -113,7 +113,7 @@ export default class TouchUI {
   }
 
   getMove() {
-    return TouchUI.calcMove(this.startPosEvent, this.endPosEvent);
+    return TouchUI.calcMove(this.startTouches, this.endTouches);
   }
 
 }
@@ -205,32 +205,60 @@ TouchUI.disableDefaultTouchBehaviour = function (el) {
   return el;
 };
 
-TouchUI.calcMove = function (startPosEvent, endPosEvent) {
+TouchUI.calcMove = function (startTouches, endTouches) {
   let move = { x: 0, y: 0, length: 0, direction: null };
   let staPos, endPos, startX, startY, endX, endY, moveX, moveY;
 
-  if (startPosEvent && endPosEvent) {
-    staPos = startPosEvent.touches && startPosEvent.touches[0] ? startPosEvent.touches[0] :
-             startPosEvent.changedTouches && startPosEvent.changedTouches[0] ? startPosEvent.changedTouches[0] :
-             startPosEvent;
-    endPos = endPosEvent.touches && endPosEvent.touches[0] ? endPosEvent.touches[0] :
-             endPosEvent.changedTouches && endPosEvent.changedTouches[0] ? endPosEvent.changedTouches[0] :
-             endPosEvent;
+  if (startTouches && endTouches) {
+    if (endTouches.length === 1) {
+      staPos = startTouches[0];
+      endPos = endTouches[0];
 
-    [startX, startY] = [staPos.clientX, staPos.clientY];
-    [endX, endY]     = [endPos.clientX, endPos.clientY];
+      //TODO .. use getDirection
+      [startX, startY] = [staPos.clientX, staPos.clientY];
+      [endX, endY]     = [endPos.clientX, endPos.clientY];
 
-    [move.x, move.y] = [endX - startX, endY - startY];
-    [moveX, moveY]   = [Math.abs(move.x), Math.abs(move.y)];
-    move.direction =
-      (moveX >  moveY) && (startX >  endX) ? 'left' :
-      (moveX >  moveY) && (startX <= endX) ? 'right' :
-      (moveX <= moveY) && (startY >  endY) ? 'up' :
-      (moveX <= moveY) && (startY <= endY) ? 'down' : null;
-    move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
+      [move.x, move.y] = [endX - startX, endY - startY];
+      [moveX, moveY]   = [Math.abs(move.x), Math.abs(move.y)];
+      move.direction =
+        (moveX >  moveY) && (startX >  endX) ? 'left' :
+        (moveX >  moveY) && (startX <= endX) ? 'right' :
+        (moveX <= moveY) && (startY >  endY) ? 'up' :
+        (moveX <= moveY) && (startY <= endY) ? 'down' : null;
+      //TODO  .. use getDistance
+      move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
+    } else if (endTouches.length === 2) {
+      // check if two finger distance has changed
+      let staDistance = TouchUI.getDistance(startTouches[0], startTouches[1]);
+      let endDistance = TouchUI.getDistance(startTouches[1], startTouches[2]);
+      let diff = endDistance - staDistance;
+      // .............
+    }
   }
   return move;
 };
+
+TouchUI.getDistance = function(x0, x1, y0, y1) {
+  let lengthX = Math.abs(x1 - x0);
+  let lengthY = Math.abs(y1 - x0);
+  return Math.sqrt(Math.pow(lengthX, 2) + Math.pow(lengthY, 2));
+};
+
+//left, right, up, down
+TouchUI.getDirection = function(x0, y0, x1, y1) {
+  let moveX, moveY, moveAbsX, moveAbsY, direction;
+
+  [moveX, moveY] = [x1 - x0, y1 - y0];
+  [moveAbsX, moveAbsY]   = [Math.abs(moveX), Math.abs(moveY)];
+
+  direction =
+    (moveAbsX >  moveAbsY) && (x0 >  x1) ? 'left' :
+    (moveAbsX >  moveAbsY) && (x0 <= x1) ? 'right' :
+    (moveAbsX <= moveAbsY) && (y0 >  y1) ? 'up' :
+    (moveAbsX <= moveAbsY) && (y0 <= y1) ? 'down' : null;
+
+  return direction;
+}
 
 TouchUI.parseArguments = function (args, options = {}) { // args is an array, Array.from(arguments), not arguments
   let parsed = {elements: [], options: options};
@@ -266,3 +294,5 @@ TouchUI.getOverlappingEl = function (el, candidates) {
   }
   return ret;
 };
+
+export default TouchUI;
