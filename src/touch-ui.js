@@ -120,22 +120,30 @@ class TouchUI {
    * moves of two touches.
    * returns length and distance of two touches
    * e.g. {
-   *   length: 2,
+   *   numTouches: 2,
    *   distance: 10,
    *   1: {x: 3, y: 4, distance: 5, direction: 'left'},
    *   2: {x: 2, y: 3, distance: 4, direction: 'right'}
    * }
    */
   getMoves() {
+    let staTouches = this.startTouches;
+    let endTouches = this.endTouches;
     let moves = {length: 0, distance: null};
+
     if (this.endTouches) {
+      // simulate a fake touch point for non-mobile device if defined
+      if (!this.endTouches[1] && typeof this.simulatedTouch === 'function') {
+        this.endTouches[1] = this.simulatedTouch();
+      }
+
       this.endTouches.forEach( (_, ndx) => {
-        moves[ndx] = TouchUI.getCalc(this.startTouches, this.endTouches, ndx);
+        moves[ndx] = TouchUI.getCalc(staTouches, endTouches, ndx);
       })
-      moves.length = this.endTouches.length;
-      moves.distance =  // distance between two touches
-        TouchUI.getDistance([ this.endTouches[0] ], [ this.endTouches[1] ], 0) -   // when ends
-        TouchUI.getDistance([ this.startTouches[0] ], [ this.startTouches[1] ], 0); // when starts
+      moves.numTouches = endTouches.length;
+      moves.distance   =  // distance of movement between two touches
+        TouchUI.getDistance([ endTouches[0] ], [ endTouches[1] ], 0) -   // when ends
+        TouchUI.getDistance([ staTouches[0] ], [ staTouches[1] ], 0); // when starts
     }
     return moves;
   }
