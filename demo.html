@@ -16,8 +16,26 @@
 
       el.style.backgroundImage = str;
     }
+
     function showScript(source, target) {
       document.querySelector(source).innerHTML = document.querySelector(target).innerHTML;
+    }
+
+    function createCenteredTouch(el) {
+      let bar, x, y, cursorEl, top, left;
+      el = typeof el === 'string' ? document.querySelector(el) : el;
+
+      bcr = el.getBoundingClientRect();
+      console.log('bcr', bcr);
+      [x, y] = [bcr.left + (bcr.width/2), bcr.top+ (bcr.height/2)]; //center of an element
+      [top, left] = [window.scrollY + y - 10, window.scrollX + x - 10];
+      cursorEl = document.createElement('div');
+      cursorEl.id = 'simulated-touch';
+      cursorEl.style = `background: grey; border-radius:50%; width: 20px; height:20px;` + 
+        `position:absolute; top: ${top}px; left: ${left}px; z-index: 100; opacity:0.5`;
+      document.body.appendChild(cursorEl);
+
+      return {clientX: x, clientY: y}
     }
   </script>
 
@@ -268,6 +286,23 @@
   <pre id="pan-code"></pre>
   <script>showScript('#pan-code', '#pan-script')</script>
 
+  <!-- zoom in/out -->
+  <h2> Zoom in/out </h2>
+  <div id="zoom-test" class="touch-box"></div>
+  <div class="instruction">
+    Try pinch/zoom on the left box
+  </div>
+  <div style="clear:both"></div>
+
+  <script id="zoom-script">
+    /* eslint-disable */
+    let zoomTestEl = document.querySelector('#zoom-test');
+    !TouchUI.isTouch() && createCenteredTouch('#zoom-test');
+  </script>
+  <pre id="zoom-code"></pre>
+  <script>showScript('#zoom-code', '#zoom-script')</script>
+
+  <!-- movement display -->
   <div id="movement-display"></div>
   <script>
     /* eslint-disable */
@@ -282,6 +317,7 @@
       });
     });
   </script>
+
 </body>
 
 </html>
