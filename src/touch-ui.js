@@ -75,7 +75,7 @@ class TouchUI {
   touchMoveHandler(e) {
     this.endTouches = e.changedTouches || [e];
     this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches, 0); // 0:index
-    if (this.getMove().length > TouchUI.SMALL_MOVE) { // not a small movement
+    if (this.getMove().distance > TouchUI.SMALL_MOVE) { // not a small movement
       clearTimeout(this.holdTimer);
       clearTimeout(this.tapTimer);
     }
@@ -84,7 +84,7 @@ class TouchUI {
 
   touchEndHandler(e) {
     this.endTouches = e.changedTouches || [e];
-    if (this.getMove().length < TouchUI.SMALL_MOVE) { // if little moved
+    if (this.getMove().distance < TouchUI.SMALL_MOVE) { // if little moved
       let eventName =
         this.lastTouchEventName === 'tap' ? 'double-tap' :
         this.lastTouchEventName === 'double-tap' ? 'triple-tap' : 'tap';
@@ -206,7 +206,7 @@ TouchUI.disableDefaultTouchBehaviour = function (el) {
 };
 
 TouchUI.calcMove = function (startTouches, endTouches, index = 0) {
-  let move = { x: 0, y: 0, length: 0, direction: null };
+  let move = { x: 0, y: 0, distance: 0, direction: null };
   let staPos, endPos, startX, startY, endX, endY;
 
   if (startTouches && endTouches) {
@@ -219,7 +219,7 @@ TouchUI.calcMove = function (startTouches, endTouches, index = 0) {
       [move.x, move.y] = [endX - startX, endY - startY];
 
       move.direction = TouchUI.getDirection(staPos, endPos);
-      move.length    = TouchUI.getDistance(staPos, endPos);
+      move.distance  = TouchUI.getDistance(staPos, endPos);
     }
   }
   return move;

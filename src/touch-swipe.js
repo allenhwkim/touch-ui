@@ -29,16 +29,16 @@ class TouchSwipe {
   init() {
     this.els.forEach(el => {
       TouchUI.disableDefaultTouchBehaviour(el);
-      el.addEventListener(TouchUI.touchMove,  this.touchMoveHandler.bind(this), {passive: true});
+      el.addEventListener(TouchUI.touchEnd,  this.touchEndHandler.bind(this), {passive: true});
     });
   }
 
-  touchMoveHandler(e) {
+  touchEndHandler(e) {
     let move, eventName;
 
     if (!this.touch.dragEl) { // current under dragging
       move = this.touch.getMove();
-      if (move.length > this.options.minMove) {
+      if (move.distance > this.options.minMove) {
         eventName = 'swipe-' + move.direction;
         TouchUI.fireTouchEvent(e.target, eventName, e);
       }

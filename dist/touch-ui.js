@@ -174,7 +174,7 @@ var TouchUI = function () {
     value: function touchMoveHandler(e) {
       this.endTouches = e.changedTouches || [e];
       this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches, 0); // 0:index
-      if (this.getMove().length > TouchUI.SMALL_MOVE) {
+      if (this.getMove().distance > TouchUI.SMALL_MOVE) {
         // not a small movement
         clearTimeout(this.holdTimer);
         clearTimeout(this.tapTimer);
@@ -185,7 +185,7 @@ var TouchUI = function () {
     key: 'touchEndHandler',
     value: function touchEndHandler(e) {
       this.endTouches = e.changedTouches || [e];
-      if (this.getMove().length < TouchUI.SMALL_MOVE) {
+      if (this.getMove().distance < TouchUI.SMALL_MOVE) {
         // if little moved
         var eventName = this.lastTouchEventName === 'tap' ? 'double-tap' : this.lastTouchEventName === 'double-tap' ? 'triple-tap' : 'tap';
 
@@ -312,7 +312,7 @@ TouchUI.disableDefaultTouchBehaviour = function (el) {
 TouchUI.calcMove = function (startTouches, endTouches) {
   var index = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
 
-  var move = { x: 0, y: 0, length: 0, direction: null };
+  var move = { x: 0, y: 0, distance: 0, direction: null };
   var staPos = void 0,
       endPos = void 0,
       startX = void 0,
@@ -337,7 +337,7 @@ TouchUI.calcMove = function (startTouches, endTouches) {
 
 
       move.direction = TouchUI.getDirection(staPos, endPos);
-      move.length = TouchUI.getDistance(staPos, endPos);
+      move.distance = TouchUI.getDistance(staPos, endPos);
     }
   }
   return move;
@@ -793,19 +793,19 @@ var TouchSwipe = function () {
 
       this.els.forEach(function (el) {
         _touchUi2.default.disableDefaultTouchBehaviour(el);
-        el.addEventListener(_touchUi2.default.touchMove, _this.touchMoveHandler.bind(_this), { passive: true });
+        el.addEventListener(_touchUi2.default.touchEnd, _this.touchEndHandler.bind(_this), { passive: true });
       });
     }
   }, {
-    key: 'touchMoveHandler',
-    value: function touchMoveHandler(e) {
+    key: 'touchEndHandler',
+    value: function touchEndHandler(e) {
       var move = void 0,
           eventName = void 0;
 
       if (!this.touch.dragEl) {
         // current under dragging
         move = this.touch.getMove();
-        if (move.length > this.options.minMove) {
+        if (move.distance > this.options.minMove) {
           eventName = 'swipe-' + move.direction;
           _touchUi2.default.fireTouchEvent(e.target, eventName, e);
         }
