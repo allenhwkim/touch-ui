@@ -219,6 +219,35 @@ var TouchUI = function () {
     value: function getMove() {
       return TouchUI.calcMove(this.startTouches, this.endTouches, 0); // 0: index
     }
+
+    /**
+     * moves of two touches.
+     * returns length and distance of two touches
+     * e.g. {
+     *   length: 2,
+     *   distance: 10,
+     *   1: {x: 3, y: 4, distance: 5, direction: 'left'},
+     *    2: {x: 2, y: 3, distance: 4, direction: 'right'}
+     * }
+     */
+
+  }, {
+    key: 'getMoves',
+    value: function getMoves() {
+      var _this3 = this;
+
+      var moves = { length: 0, distance: null };
+      if (this.endTouches) {
+        this.endTouches.forEach(function (_, ndx) {
+          moves[ndx] = TouchUI.getCalc(_this3.startTouches[ndx], _this3.endTouches[nex]);
+        });
+        moves.length = this.endTouches.length;
+        moves.distance = // distance between two touches
+        TouchUI.getDistance(this.endTouches[0], this.endTouches[1]) - // when ends
+        TouchUI.getDistance(this.startTouches[0], this.startTouches[1]); // when starts
+      }
+      return moves;
+    }
   }]);
 
   return TouchUI;
@@ -321,25 +350,24 @@ TouchUI.calcMove = function (startTouches, endTouches) {
       endY = void 0;
 
   if (startTouches && endTouches) {
-    if (endTouches.length === 1) {
-      staPos = startTouches[index];
-      endPos = endTouches[index];
+    staPos = startTouches[index];
+    endPos = endTouches[index];
 
-      var _ref = [staPos.clientX, staPos.clientY];
-      startX = _ref[0];
-      startY = _ref[1];
-      var _ref2 = [endPos.clientX, endPos.clientY];
-      endX = _ref2[0];
-      endY = _ref2[1];
-      var _ref3 = [endX - startX, endY - startY];
-      move.x = _ref3[0];
-      move.y = _ref3[1];
+    var _ref = [staPos.clientX, staPos.clientY];
+    startX = _ref[0];
+    startY = _ref[1];
+    var _ref2 = [endPos.clientX, endPos.clientY];
+    endX = _ref2[0];
+    endY = _ref2[1];
+    var _ref3 = [endX - startX, endY - startY];
+    move.x = _ref3[0];
+    move.y = _ref3[1];
 
 
-      move.direction = TouchUI.getDirection(staPos, endPos);
-      move.distance = TouchUI.getDistance(staPos, endPos);
-    }
+    move.direction = TouchUI.getDirection(staPos, endPos);
+    move.distance = TouchUI.getDistance(staPos, endPos);
   }
+
   return move;
 };
 

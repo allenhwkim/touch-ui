@@ -116,6 +116,29 @@ class TouchUI {
     return TouchUI.calcMove(this.startTouches, this.endTouches, 0); // 0: index
   }
 
+  /**
+   * moves of two touches.
+   * returns length and distance of two touches
+   * e.g. {
+   *   length: 2,
+   *   distance: 10,
+   *   1: {x: 3, y: 4, distance: 5, direction: 'left'},
+   *    2: {x: 2, y: 3, distance: 4, direction: 'right'}
+   * }
+   */
+  getMoves() {
+    let moves = {length: 0, distance: null};
+    if (this.endTouches) {
+      this.endTouches.forEach( (_, ndx) => {
+        moves[ndx] = TouchUI.getCalc(this.startTouches[ndx], this.endTouches[nex]);
+      })
+      moves.length = this.endTouches.length;
+      moves.distance =  // distance between two touches
+        TouchUI.getDistance(this.endTouches[0], this.endTouches[1]) -   // when ends
+        TouchUI.getDistance(this.startTouches[0], this.startTouches[1]); // when starts
+    }
+    return moves;
+  }
 }
 
 TouchUI.isTouch = function () {
@@ -210,18 +233,17 @@ TouchUI.calcMove = function (startTouches, endTouches, index = 0) {
   let staPos, endPos, startX, startY, endX, endY;
 
   if (startTouches && endTouches) {
-    if (endTouches.length === 1) {
-      staPos = startTouches[index];
-      endPos = endTouches[index];
+    staPos = startTouches[index];
+    endPos = endTouches[index];
 
-      [startX, startY] = [staPos.clientX, staPos.clientY];
-      [endX, endY]     = [endPos.clientX, endPos.clientY];
-      [move.x, move.y] = [endX - startX, endY - startY];
+    [startX, startY] = [staPos.clientX, staPos.clientY];
+    [endX, endY]     = [endPos.clientX, endPos.clientY];
+    [move.x, move.y] = [endX - startX, endY - startY];
 
-      move.direction = TouchUI.getDirection(staPos, endPos);
-      move.distance  = TouchUI.getDistance(staPos, endPos);
-    }
+    move.direction = TouchUI.getDirection(staPos, endPos);
+    move.distance  = TouchUI.getDistance(staPos, endPos);
   }
+
   return move;
 };
 
