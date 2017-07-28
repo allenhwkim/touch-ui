@@ -221,7 +221,7 @@ var TouchUI = function () {
     }
 
     /**
-     * moves of two touches.
+     * moves of two finger touches.
      * returns length and distance of two touches
      * e.g. {
      *   numTouches: 2,
@@ -317,23 +317,6 @@ TouchUI.getStyle = function (elem, prop) {
     style = window.getComputedStyle(elem, null)[prop];
   }
   return style;
-};
-
-TouchUI.getOverlappingEl = function (inEl, outEls) {
-  var rect1 = inEl.getBoundingClientRect(),
-      rect2 = void 0,
-      overlap = void 0;
-  var ret = void 0;
-
-  for (var i = 0; i < outEls.length; i++) {
-    rect2 = outEls[i].getBoundingClientRect();
-    overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
-    if (overlap) {
-      ret = outEls[i];
-      break;
-    }
-  }
-  return ret;
 };
 
 TouchUI.disableDefaultTouchBehaviour = function (el) {
