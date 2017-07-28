@@ -227,7 +227,7 @@ var TouchUI = function () {
      *   length: 2,
      *   distance: 10,
      *   1: {x: 3, y: 4, distance: 5, direction: 'left'},
-     *    2: {x: 2, y: 3, distance: 4, direction: 'right'}
+     *   2: {x: 2, y: 3, distance: 4, direction: 'right'}
      * }
      */
 
@@ -239,12 +239,12 @@ var TouchUI = function () {
       var moves = { length: 0, distance: null };
       if (this.endTouches) {
         this.endTouches.forEach(function (_, ndx) {
-          moves[ndx] = TouchUI.getCalc(_this3.startTouches[ndx], _this3.endTouches[nex]);
+          moves[ndx] = TouchUI.getCalc(_this3.startTouches, _this3.endTouches, ndx);
         });
         moves.length = this.endTouches.length;
         moves.distance = // distance between two touches
-        TouchUI.getDistance(this.endTouches[0], this.endTouches[1]) - // when ends
-        TouchUI.getDistance(this.startTouches[0], this.startTouches[1]); // when starts
+        TouchUI.getDistance([this.endTouches[0]], [this.endTouches[1]], 0) - // when ends
+        TouchUI.getDistance([this.startTouches[0]], [this.startTouches[1]], 0); // when starts
       }
       return moves;
     }
