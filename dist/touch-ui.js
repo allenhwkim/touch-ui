@@ -225,7 +225,7 @@ var TouchUI = function () {
      * returns length and distance of two touches
      * e.g. {
      *   numTouches: 2,
-     *   distance: 10,
+     *   diffTouchDistance: 10,
      *   1: {x: 3, y: 4, distance: 5, direction: 'left'},
      *   2: {x: 2, y: 3, distance: 4, direction: 'right'}
      * }
@@ -236,21 +236,21 @@ var TouchUI = function () {
     value: function getMoves() {
       var staTouches = this.startTouches;
       var endTouches = this.endTouches;
-      var moves = { length: 0, distance: null };
+      var moves = {};
 
-      if (this.endTouches) {
-        // simulate a fake touch point for non-mobile device if defined
-        if (!this.endTouches[1] && typeof this.simulatedTouch === 'function') {
-          this.endTouches[1] = this.simulatedTouch();
+      // simulate a fake touch point for non-mobile device if defined
+      if (this.endTouches && this.startTouches) {
+        if (!this.endTouches[1] && this.simulatedTouch) {
+          this.endTouches[1] = this.simulatedTouch;
+          this.startTouches[1] = this.simulatedTouch;
         }
 
-        this.endTouches.forEach(function (_, ndx) {
-          moves[ndx] = TouchUI.getCalc(staTouches, endTouches, ndx);
-        });
-        moves.numTouches = endTouches.length;
-        moves.distance = // distance of movement between two touches
-        TouchUI.getDistance([endTouches[0]], [endTouches[1]], 0) - // when ends
-        TouchUI.getDistance([staTouches[0]], [staTouches[1]], 0); // when starts
+        if (this.endTouches.length === 2) {
+          moves.diffTouchDistance = // distance of movement between two touches
+          TouchUI.getDistance(endTouches[0], endTouches[1]) - // when ends
+          TouchUI.getDistance(staTouches[0], staTouches[1]); // when starts
+          moves.rotationDegree = TouchUI.getRotationDegree(staTouches, endTouches);
+        }
       }
       return moves;
     }
@@ -258,6 +258,21 @@ var TouchUI = function () {
 
   return TouchUI;
 }();
+
+TouchUI.getRotationDegree = function (start, end) {
+  var diffTouch1 = {
+    x: start[0].clientX - start[1].clientX,
+    y: start[0].clientY - start[1].clientY
+  };
+  var diffTouch2 = {
+    x: end[0].clientX - end[1].clientX,
+    y: end[0].clientY - end[1].clientY
+  };
+
+  var degree = Math.atan2(diffTouch2.y - diffTouch1.y, diffTouch2.x - diffTouch1.x) * 180 / Math.PI;
+
+  return degree;
+};
 
 TouchUI.isTouch = function () {
   return 'ontouchstart' in window || navigator.MaxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
@@ -361,7 +376,7 @@ TouchUI.calcMove = function (startTouches, endTouches) {
 };
 
 TouchUI.getDistance = function (staPos, endPos) {
-  return Math.sqrt(Math.pow(staPos.clientX - endPos.clientX, 2) + Math.pow(staPos.clientY - endPos.clientY, 2));
+  return Math.round(Math.sqrt(Math.pow(staPos.clientX - endPos.clientX, 2) + Math.pow(staPos.clientY - endPos.clientY, 2)));
 };
 
 // left, right, up, down

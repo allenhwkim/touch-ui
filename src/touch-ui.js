@@ -129,27 +129,42 @@ class TouchUI {
   getMoves() {
     let staTouches = this.startTouches;
     let endTouches = this.endTouches;
-    let moves = {length: 0, distance: null};
+    let moves = {};
 
-    if (this.endTouches) {
-      // simulate a fake touch point for non-mobile device if defined
+    // simulate a fake touch point for non-mobile device if defined
+    if (this.endTouches && this.startTouches) {
       if (!this.endTouches[1] && this.simulatedTouch) {
         this.endTouches[1] = this.simulatedTouch;
+        this.startTouches[1] = this.simulatedTouch;
       }
 
-      let leftTouch, rightTouch;
-
-      leftTouch = (this.endTouches[0].clientX < this.endTouches[1].clientX) ? 0 : 1;
-      rightTouch = leftTouch === 0 ? 1 : 0;
-
-      moves.left  = TouchUI.getCalc(staTouches, endTouches, leftTouch);
-      moves.right = TouchUI.getCalc(staTouches, endTouches, rightTouch);
-      moves.diffTouchDistance =  // distance of movement between two touches
-        TouchUI.getDistance([ endTouches[0] ], [ endTouches[1] ], 0) -   // when ends
-        TouchUI.getDistance([ staTouches[0] ], [ staTouches[1] ], 0); // when starts
+      if (this.endTouches.length === 2) {
+        moves.diffTouchDistance =  // distance of movement between two touches
+          TouchUI.getDistance( endTouches[0], endTouches[1]) -  // when ends
+          TouchUI.getDistance( staTouches[0], staTouches[1]);   // when starts
+        moves.rotationDegree = TouchUI.getRotationDegree(staTouches, endTouches);
+      }
     }
     return moves;
   }
+}
+
+TouchUI.getRotationDegree = function(start, end) {
+  let diffTouch1 = { 
+    x: (start[0].clientX - start[1].clientX),
+    y: (start[0].clientY - start[1].clientY)
+  };
+  let diffTouch2 = { 
+    x: (end[0].clientX - end[1].clientX),
+    y: (end[0].clientY - end[1].clientY)
+  };
+
+  var degree = Math.atan2(
+      diffTouch2.y - diffTouch1.y, 
+      diffTouch2.x - diffTouch1.x
+    ) * 180 / Math.PI;
+
+  return degree;
 }
 
 TouchUI.isTouch = function () {
@@ -241,9 +256,12 @@ TouchUI.calcMove = function (startTouches, endTouches, index = 0) {
 };
 
 TouchUI.getDistance = function (staPos, endPos) {
-  return Math.sqrt(
-    Math.pow(staPos.clientX - endPos.clientX, 2) +
-    Math.pow(staPos.clientY - endPos.clientY, 2));
+  return Math.round(
+    Math.sqrt(
+      Math.pow(staPos.clientX - endPos.clientX, 2) +
+      Math.pow(staPos.clientY - endPos.clientY, 2)
+    )
+  );
 };
 
 // left, right, up, down

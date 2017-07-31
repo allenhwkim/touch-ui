@@ -21,12 +21,11 @@
       document.querySelector(source).innerHTML = document.querySelector(target).innerHTML;
     }
 
-    function createCenteredTouch(el) {
+    function createSimulatedTouch(el) {
       let bar, x, y, cursorEl, top, left;
       el = typeof el === 'string' ? document.querySelector(el) : el;
 
       bcr = el.getBoundingClientRect();
-      console.log('bcr', bcr);
       [x, y] = [bcr.left + (bcr.width/2), bcr.top+ (bcr.height/2)]; //center of an element
       [top, left] = [window.scrollY + y - 10, window.scrollX + x - 10];
       cursorEl = document.createElement('div');
@@ -37,6 +36,12 @@
 
       return {clientX: x, clientY: y}
     }
+
+    function removeSimulatedTouch() {
+      document.querySelector('#simulated-touch').remove();
+      return null;
+    }
+
   </script>
 
   <style>
@@ -288,7 +293,9 @@
 
   <!-- zoom in/out -->
   <h2> Zoom in/out </h2>
-  <div id="zoom-test" class="touch-box"></div>
+  <div id="zoom-test" class="touch-box" style="overflow: hidden">
+    <img src="http://lorempixel.com/1536/600/nature/" width="100%" style="pointer-events: none; user-select: none"/>
+  </div>
   <div class="instruction">
     Try pinch/zoom on the left box
   </div>
@@ -297,7 +304,50 @@
   <script id="zoom-script">
     /* eslint-disable */
     let zoomTestEl = document.querySelector('#zoom-test');
-    !TouchUI.isTouch() && createCenteredTouch('#zoom-test');
+    zoomTestEl.addEventListener('mousedown', e => {
+      touch.simulatedTouch = createSimulatedTouch('#zoom-test')
+    });
+    zoomTestEl.addEventListener('mouseup', e => {
+      touch.simulatedTouch = removeSimulatedTouch('#zoom-test')
+    });
+
+    let zoomStarted = false, rotationStarted = false, zoomStartDegree, rotated, zoomed;
+    zoomTestEl.addEventListener(TouchUI.touchStart, e => {
+    });
+
+    let imgEl = document.querySelector('#zoom-test img');
+    imgEl.style.transform = 'rotate(0deg) scale(1)';
+    zoomTestEl.addEventListener(TouchUI.touchMove, e => {
+      let moves = touch.getMoves();
+      if (Math.abs(moves.diffTouchDistance) > 30) {
+        let matches = imgEl.style.transform.match(/scale\((.*)\)/);
+        zoomed = matches ? matches[1] * 1 : 0;
+        zoomStarted = true;
+      } else if (!rotationStarted && (Math.abs(moves.rotationDegree) > 1)) {
+        let matches = imgEl.style.transform.match(/rotate\((.*)deg\)/);
+        rotated = matches ? matches[1] * 1 : 0;
+        rotationStartDegree = moves.rotationDegree;
+        rotationStarted = true;
+      }
+
+      if (zoomStarted) {
+        console.log('zoom happening', moves);
+        let scale = zoomed + (moves.diffTouchDistance/10000);
+        scale = scale > 3 ? 3 : scale < 0.5 ? 0.5 : scale;
+        imgEl.style.transform = imgEl.style.transform.replace(/scale\((.*)\)/, (_, $1) => `scale(${scale})`);
+      }
+      if (rotationStarted) {
+        console.log(rotated, 111111, imgEl.style.transform);
+        console.log('rotation happening', moves.rotationDegree, rotationStartDegree);
+        let deg = rotated + moves.rotationDegree - rotationStartDegree;
+        imgEl.style.transform = imgEl.style.transform.replace(/rotate\((.*)deg\)/, (_, $1) => `rotate(${deg}deg)`);
+      }
+    });
+
+    zoomTestEl.addEventListener(TouchUI.touchEnd, e => {
+      zoomStarted = false;
+      rotationStarted = false;
+    });
   </script>
   <pre id="zoom-code"></pre>
   <script>showScript('#zoom-code', '#zoom-script')</script>
@@ -313,7 +363,7 @@
       document.body.addEventListener(eventName, e => {
         document.querySelector('#movement-display').innerHTML = `
             Total Movement: ${JSON.stringify(touch.getMove())}<br/>
-            LastMovement: ${JSON.stringify(touch.lastMove)} `;
+            ${touch.lastMove && touch.lastMove.direction} `;
       });
     });
   </script>
