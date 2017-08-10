@@ -19,7 +19,7 @@ class TouchSwipe {
     let defaultOptions, args;
 
     defaultOptions = {minMove: 50};
-    args = TouchUI.parseArguments(Array.from(arguments), defaultOptions);
+    args = TouchUI.parseArguments([...arguments], defaultOptions);
     [this.els, this.options]  = [args.elements, args.options];
 
     this.touch = new TouchUI(); // sets basic touch events by watching start, move, and end

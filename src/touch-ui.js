@@ -55,7 +55,7 @@ class TouchUI {
   touchStartHandler(e) {
     this.startTouches = e.changedTouches || [e];
     this.startAt = (new Date()).getTime();
-    this.holeHappened = false;
+    this.holdHappened = false;
 
     clearTimeout(this.tapTimer);
     clearTimeout(this.holdTimer);
@@ -140,31 +140,13 @@ class TouchUI {
 
       if (this.endTouches.length === 2) {
         moves.diffTouchDistance =  // distance of movement between two touches
-          TouchUI.getDistance( endTouches[0], endTouches[1]) -  // when ends
-          TouchUI.getDistance( staTouches[0], staTouches[1]);   // when starts
-        moves.rotationDegree = TouchUI.getRotationDegree(staTouches, endTouches);
+          TouchUI.getDistance(endTouches[0], endTouches[1]) -  // when ends
+          TouchUI.getDistance(staTouches[0], staTouches[1]);   // when starts
+        // moves.rotationDegree = TouchUI.getRotationDegree(staTouches, endTouches);
       }
     }
     return moves;
   }
-}
-
-TouchUI.getRotationDegree = function(start, end) {
-  let diffTouch1 = { 
-    x: (start[0].clientX - start[1].clientX),
-    y: (start[0].clientY - start[1].clientY)
-  };
-  let diffTouch2 = { 
-    x: (end[0].clientX - end[1].clientX),
-    y: (end[0].clientY - end[1].clientY)
-  };
-
-  var degree = Math.atan2(
-      diffTouch2.y - diffTouch1.y, 
-      diffTouch2.x - diffTouch1.x
-    ) * 180 / Math.PI;
-
-  return degree;
 }
 
 TouchUI.isTouch = function () {
@@ -282,10 +264,14 @@ TouchUI.getDirection = function (staPos, endPos) {
 };
 
 TouchUI.parseArguments = function (args, options = {}) { // args is an array, Array.from(arguments), not arguments
+  if (!Array.isArray(args)) throw new Error('Invalid arguments. Must be an array');
+
   let parsed = {elements: [], options: options};
 
   args.forEach(arg => {
-    if (Array.isArray(arg)) {
+    if (typeof arg === 'string') {
+      parsed.elements = parsed.elements.concat([...document.querySelectorAll(arg)]);
+    } else if (Array.isArray(arg)) {
       parsed.elements = parsed.elements.concat(arg);
     } else if (arg instanceof HTMLElement) {
       parsed.elements.push(arg);
@@ -315,5 +301,25 @@ TouchUI.getOverlappingEl = function (el, candidates) {
   }
   return ret;
 };
+
+/* Unused as of now
+TouchUI.getRotationDegree = function (start, end) {
+  let diffTouch1 = {
+    x: (start[0].clientX - start[1].clientX),
+    y: (start[0].clientY - start[1].clientY)
+  };
+  let diffTouch2 = {
+    x: (end[0].clientX - end[1].clientX),
+    y: (end[0].clientY - end[1].clientY)
+  };
+
+  var degree = Math.atan2(
+      diffTouch2.y - diffTouch1.y,
+      diffTouch2.x - diffTouch1.x
+    ) * 180 / Math.PI;
+
+  return degree;
+};
+*/
 
 export default TouchUI;

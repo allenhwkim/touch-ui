@@ -19,7 +19,7 @@ class TouchDrop {
   constructor() {
     let args;
 
-    args = TouchUI.parseArguments(Array.from(arguments));
+    args = TouchUI.parseArguments([...arguments]);
 
     this.dropzoneEls = [];
     this.options = {};

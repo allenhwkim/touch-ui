@@ -88,6 +88,8 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 /**
@@ -249,7 +251,7 @@ var TouchUI = function () {
           moves.diffTouchDistance = // distance of movement between two touches
           TouchUI.getDistance(endTouches[0], endTouches[1]) - // when ends
           TouchUI.getDistance(staTouches[0], staTouches[1]); // when starts
-          moves.rotationDegree = TouchUI.getRotationDegree(staTouches, endTouches);
+          // moves.rotationDegree = TouchUI.getRotationDegree(staTouches, endTouches);
         }
       }
       return moves;
@@ -258,21 +260,6 @@ var TouchUI = function () {
 
   return TouchUI;
 }();
-
-TouchUI.getRotationDegree = function (start, end) {
-  var diffTouch1 = {
-    x: start[0].clientX - start[1].clientX,
-    y: start[0].clientY - start[1].clientY
-  };
-  var diffTouch2 = {
-    x: end[0].clientX - end[1].clientX,
-    y: end[0].clientY - end[1].clientY
-  };
-
-  var degree = Math.atan2(diffTouch2.y - diffTouch1.y, diffTouch2.x - diffTouch1.x) * 180 / Math.PI;
-
-  return degree;
-};
 
 TouchUI.isTouch = function () {
   return 'ontouchstart' in window || navigator.MaxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
@@ -407,10 +394,14 @@ TouchUI.getDirection = function (staPos, endPos) {
 TouchUI.parseArguments = function (args) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   // args is an array, Array.from(arguments), not arguments
+  if (!Array.isArray(args)) throw new Error('Invalid arguments. Must be an array');
+
   var parsed = { elements: [], options: options };
 
   args.forEach(function (arg) {
-    if (Array.isArray(arg)) {
+    if (typeof arg === 'string') {
+      parsed.elements = parsed.elements.concat([].concat(_toConsumableArray(document.querySelectorAll(arg))));
+    } else if (Array.isArray(arg)) {
       parsed.elements = parsed.elements.concat(arg);
     } else if (arg instanceof HTMLElement) {
       parsed.elements.push(arg);
@@ -440,6 +431,26 @@ TouchUI.getOverlappingEl = function (el, candidates) {
   return ret;
 };
 
+/* Unused as of now
+TouchUI.getRotationDegree = function (start, end) {
+  let diffTouch1 = {
+    x: (start[0].clientX - start[1].clientX),
+    y: (start[0].clientY - start[1].clientY)
+  };
+  let diffTouch2 = {
+    x: (end[0].clientX - end[1].clientX),
+    y: (end[0].clientY - end[1].clientY)
+  };
+
+  var degree = Math.atan2(
+      diffTouch2.y - diffTouch1.y,
+      diffTouch2.x - diffTouch1.x
+    ) * 180 / Math.PI;
+
+  return degree;
+};
+*/
+
 exports.default = TouchUI;
 module.exports = exports['default'];
 
@@ -453,7 +464,7 @@ module.exports = exports['default'];
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TouchPan = exports.TouchSwipe = exports.TouchDrop = exports.TouchDrag = exports.TouchUI = undefined;
+exports.TouchZoom = exports.TouchPan = exports.TouchSwipe = exports.TouchDrop = exports.TouchDrag = exports.TouchUI = undefined;
 
 var _touchUi = __webpack_require__(0);
 
@@ -475,6 +486,10 @@ var _touchPan = __webpack_require__(5);
 
 var _touchPan2 = _interopRequireDefault(_touchPan);
 
+var _touchZoom = __webpack_require__(6);
+
+var _touchZoom2 = _interopRequireDefault(_touchZoom);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.TouchUI = _touchUi2.default;
@@ -482,6 +497,7 @@ exports.TouchDrag = _touchDrag2.default;
 exports.TouchDrop = _touchDrop2.default;
 exports.TouchSwipe = _touchSwipe2.default;
 exports.TouchPan = _touchPan2.default;
+exports.TouchZoom = _touchZoom2.default;
 
 // for browser environment with `<script>` tag
 
@@ -535,7 +551,7 @@ var TouchDrag = function () {
 
     this.els = [];
     var defaultOptions = { axis: 'xy' };
-    var args = _touchUi2.default.parseArguments(Array.from(arguments), defaultOptions);
+    var args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)), defaultOptions);
 
     var _ref = [args.elements, args.options];
     this.els = _ref[0];
@@ -696,7 +712,7 @@ var TouchDrop = function () {
 
     var args = void 0;
 
-    args = _touchUi2.default.parseArguments(Array.from(arguments));
+    args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)));
 
     this.dropzoneEls = [];
     this.options = {};
@@ -808,7 +824,7 @@ var TouchSwipe = function () {
         args = void 0;
 
     defaultOptions = { minMove: 50 };
-    args = _touchUi2.default.parseArguments(Array.from(arguments), defaultOptions);
+    args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)), defaultOptions);
     var _ref = [args.elements, args.options];
     this.els = _ref[0];
     this.options = _ref[1];
@@ -985,6 +1001,133 @@ _touchUi2.default.pannable = function () {
 };
 
 exports.default = TouchPan;
+module.exports = exports['default'];
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Extends functionality of TouchUI
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Fires the following event to the given elements
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - zoom-start
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - zoom-move
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - zoom-end
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * How it works
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   1. when hold happens, adds zoom listeners to the element
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   2. with minimal touch moves on the element, it fires `zoom-start`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      With zoom started and touch moves, it fiStephen Elliott <Stephen.Elliott@rci.rogers.com>res `zoom-move`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   3. when touch move ends and if zoom started, it fires `zoom-end`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _touchUi = __webpack_require__(0);
+
+var _touchUi2 = _interopRequireDefault(_touchUi);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var TouchZoom = function () {
+  function TouchZoom() {
+    _classCallCheck(this, TouchZoom);
+
+    this.els = [];
+    var args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)));
+
+    var _ref = [args.elements, args.options];
+    this.els = _ref[0];
+    this.options = _ref[1];
+
+    console.log(0, this.els);
+
+    this.touch; // singleton instance of TouchUI
+    this.zoomStartAt; // time of hold + move happened
+
+    this.handlers = {
+      start: this.addZoomListeners.bind(this),
+      move: this.zoomMoveHandler.bind(this),
+      end: this.zoomEndHandler.bind(this)
+    };
+
+    this.init();
+  }
+
+  _createClass(TouchZoom, [{
+    key: 'init',
+    value: function init() {
+      var _this = this;
+
+      this.touch = new _touchUi2.default(); // sets basic touch events by watching start, move, and end
+
+      this.els.forEach(function (el) {
+        _touchUi2.default.disableDefaultTouchBehaviour(el);
+        el.addEventListener(_touchUi2.default.touchStart, _this.handlers.start, { passive: true });
+      });
+    }
+
+    // when touch starts add zoom-related listeners
+
+  }, {
+    key: 'addZoomListeners',
+    value: function addZoomListeners(e) {
+      console.log(1111111111111, e.target);
+      e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move, { passive: true });
+      e.target.addEventListener(_touchUi2.default.touchEnd, this.handlers.end);
+      e.target.addEventListener(_touchUi2.default.touchLeave, this.handlers.end);
+    }
+  }, {
+    key: 'removeZoomListeners',
+    value: function removeZoomListeners(el) {
+      el.removeEventListener(_touchUi2.default.touchMove, this.handlers.move);
+      el.removeEventListener(_touchUi2.default.touchEnd, this.handlers.end);
+      el.removeEventListener(_touchUi2.default.touchLeave, this.handlers.end);
+    }
+  }, {
+    key: 'zoomMoveHandler',
+    value: function zoomMoveHandler(e) {
+      var moves = this.touch.getMoves();
+      console.log(2222222222222, e.target);
+
+      if (!this.zoomStartAt && Math.abs(moves.diffTouchDistance) > 20) {
+        _touchUi2.default.fireTouchEvent(e.target, 'zoom-start', e, { moves: moves });
+        this.zoomStartAt = new Date().getTime();
+      } else if (this.zoomStartAt) {
+        _touchUi2.default.fireTouchEvent(e.target, 'zoom-move', e, { moves: moves });
+      }
+    }
+  }, {
+    key: 'zoomEndHandler',
+    value: function zoomEndHandler(e) {
+      if (this.zoomStartAt) {
+        _touchUi2.default.fireTouchEvent(e.target, 'zoom-end', e);
+      }
+      this.zoomStartAt = null;
+      this.removeZoomListeners(e.target);
+    }
+  }]);
+
+  return TouchZoom;
+}();
+
+/* alias of `new TouchZoom(..)` */
+
+
+_touchUi2.default.zoomable = function () {
+  return new (Function.prototype.bind.apply(TouchZoom, [null].concat(Array.prototype.slice.call(arguments))))();
+};
+
+exports.default = TouchZoom;
 module.exports = exports['default'];
 
 /***/ })

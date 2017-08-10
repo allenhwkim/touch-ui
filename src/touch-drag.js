@@ -26,7 +26,7 @@ class TouchDrag {
   constructor() {
     this.els = [];
     let defaultOptions = {axis: 'xy'};
-    let args = TouchUI.parseArguments(Array.from(arguments), defaultOptions);
+    let args = TouchUI.parseArguments([...arguments], defaultOptions);
 
     [this.els, this.options] = [args.elements, args.options];
 

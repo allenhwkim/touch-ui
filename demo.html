@@ -120,7 +120,9 @@
 <body>
   <h1> Touch UI </h1>
 
-  <!-- Tap/Hold Test -->
+  <!-- ................................................................................................ -->
+  <!--                                           Tap/Hold Test                                          -->
+  <!-- ................................................................................................ -->
   <h2> Tap/Hold </h2>
   <div id="tap-hold" class="touch-box" style="height:200px"></div>
   <div class="instruction">
@@ -187,7 +189,9 @@
   Code: <pre id="drag-code"></pre>
   <script>showScript('#drag-code', '#drag-script')</script>
 
-  <!-- Drag And Drop Test -->
+  <!-- ................................................................................................ -->
+  <!--                                           Drag/Drop Test                                         -->
+  <!-- ................................................................................................ -->
   <h2> Drop </h2>
   <div id="drop-test" class="touch-box">
     <div class="droppable">
@@ -223,7 +227,9 @@
  <pre id="drag-drop-code"></pre>
   <script>showScript('#drag-drop-code', '#drag-drop-script')</script> 
 
-  <!-- Swipe Test -->
+  <!-- ................................................................................................ -->
+  <!--                                           Swipe Test                                             -->
+  <!-- ................................................................................................ -->
   <h2> Swipe </h2>
   <div id="swipe-test" class="touch-box">
     <div class="swipable">Swipe Here</div>
@@ -258,7 +264,9 @@
   <pre id="swipe-code"></pre>
   <script>showScript('#swipe-code', '#swipe-script')</script>
  
-  <!-- Pan Test -->
+  <!-- ................................................................................................ -->
+  <!--                                           Pan Test                                               -->
+  <!-- ................................................................................................ -->
   <h2> Pan </h2>
   <div id="pan-test" class="touch-box" style="background:url(http://lorempixel.com/1024/768/nature/)">
   </div>
@@ -291,7 +299,9 @@
   <pre id="pan-code"></pre>
   <script>showScript('#pan-code', '#pan-script')</script>
 
-  <!-- zoom in/out -->
+  <!-- ................................................................................................ -->
+  <!--                                           Zoom In/Out Test                                       -->
+  <!-- ................................................................................................ -->
   <h2> Zoom in/out </h2>
   <div id="zoom-test" class="touch-box" style="overflow: hidden">
     <img src="http://lorempixel.com/1536/600/nature/" width="100%" style="pointer-events: none; user-select: none"/>
@@ -304,55 +314,36 @@
   <script id="zoom-script">
     /* eslint-disable */
     let zoomTestEl = document.querySelector('#zoom-test');
-    zoomTestEl.addEventListener('mousedown', e => {
+    let imgEl = document.querySelector('#zoom-test img');
+    let zoomable = TouchUI.zoomable('#zoom-test');
+    let moves, matches, imgScale;
+
+    zoomTestEl.addEventListener('mousedown', e => { // add the second finger for a browser
       touch.simulatedTouch = createSimulatedTouch('#zoom-test')
     });
-    zoomTestEl.addEventListener('mouseup', e => {
+    zoomTestEl.addEventListener('mouseup', e => {   // remove the second finger
       touch.simulatedTouch = removeSimulatedTouch('#zoom-test')
     });
 
-    let zoomStarted = false, rotationStarted = false, zoomStartDegree, rotated, zoomed;
-    zoomTestEl.addEventListener(TouchUI.touchStart, e => {
+    imgEl.style.transform = 'scale(1)';
+    zoomTestEl.addEventListener('zoom-start', e => { // get the initial scale
+      matches = imgEl.style.transform.match(/scale\((.*)\)/);
+      imgScale = matches ? matches[1] * 1 : 0;
     });
 
-    let imgEl = document.querySelector('#zoom-test img');
-    imgEl.style.transform = 'rotate(0deg) scale(1)';
-    zoomTestEl.addEventListener(TouchUI.touchMove, e => {
-      let moves = touch.getMoves();
-      if (Math.abs(moves.diffTouchDistance) > 30) {
-        let matches = imgEl.style.transform.match(/scale\((.*)\)/);
-        zoomed = matches ? matches[1] * 1 : 0;
-        zoomStarted = true;
-      } else if (!rotationStarted && (Math.abs(moves.rotationDegree) > 1)) {
-        let matches = imgEl.style.transform.match(/rotate\((.*)deg\)/);
-        rotated = matches ? matches[1] * 1 : 0;
-        rotationStartDegree = moves.rotationDegree;
-        rotationStarted = true;
-      }
-
-      if (zoomStarted) {
-        console.log('zoom happening', moves);
-        let scale = zoomed + (moves.diffTouchDistance/10000);
-        scale = scale > 3 ? 3 : scale < 0.5 ? 0.5 : scale;
-        imgEl.style.transform = imgEl.style.transform.replace(/scale\((.*)\)/, (_, $1) => `scale(${scale})`);
-      }
-      if (rotationStarted) {
-        console.log(rotated, 111111, imgEl.style.transform);
-        console.log('rotation happening', moves.rotationDegree, rotationStartDegree);
-        let deg = rotated + moves.rotationDegree - rotationStartDegree;
-        imgEl.style.transform = imgEl.style.transform.replace(/rotate\((.*)deg\)/, (_, $1) => `rotate(${deg}deg)`);
-      }
+    zoomTestEl.addEventListener('zoom-move', e => { // update scale with moving distance
+      scale = imgScale + (e.moves.diffTouchDistance/500);
+      console.log(e.moves.diffTouchDistance);
+      imgEl.style.transform = imgEl.style.transform.replace(/scale\((.*)\)/, (_, $1) => `scale(${scale})`);
     });
 
-    zoomTestEl.addEventListener(TouchUI.touchEnd, e => {
-      zoomStarted = false;
-      rotationStarted = false;
-    });
   </script>
   <pre id="zoom-code"></pre>
   <script>showScript('#zoom-code', '#zoom-script')</script>
 
-  <!-- movement display -->
+  <!-- ................................................................................................ -->
+  <!--                                           Console                                                -->
+  <!-- ................................................................................................ -->
   <div id="movement-display"></div>
   <script>
     /* eslint-disable */
