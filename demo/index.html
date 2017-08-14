@@ -252,7 +252,7 @@
   <script id="resize-script">
     /* eslint-disable */
     let resizableEl = document.querySelector('.resizable');
-    let resize = TouchUI.resizable(resizableEl);
+    let resize = TouchUI.resizable(resizableEl, {positions: 'right'});
     let elRight  = document.querySelector('#resize-right');
     let elBottom = document.querySelector('#resize-bottom');
     let startWidth, startHeight;

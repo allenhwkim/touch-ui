@@ -16,17 +16,18 @@ import TouchDrag from './touch-drag';
 
 class TouchResize {
 
-  constructor() {
+  constructor(options) {
     this.els = [];
     this.touch = new TouchUI();
     this.startWidth;
     this.startHeight;
     this.overlayEls = [];
 
-    let defaultOptions = {right: null, bottom: null};
+    let defaultOptions = {positions: 'right, bottom'};
     let args = TouchUI.parseArguments([...arguments], defaultOptions);
 
     [this.els, this.options] = [args.elements, args.options];
+    console.log('TouchResize', 'this.els', this.els, 'this.options', this.options);
 
     window.addEventListener('load', this.init.bind(this));
   }
@@ -45,7 +46,6 @@ class TouchResize {
   }
 
   resizeStartHandler(e) {
-    console.log('TouchResize .......resize-start', e);
     let resizeEl = e.resizeFor;
     let resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
     let resizePosition = e.target.getAttribute('resize-direction');
@@ -89,12 +89,13 @@ class TouchResize {
     /* eslint no-unused-vars: 0 */
     let overlayEl;
     let top, left, width, height, cursor;
+    let positions = options.positions.split(',').map(p => p.trim());
 
-    for (let key in options) {
+    positions.forEach(key => {
       overlayEl = document.createElement('div');
       overlayEl.setAttribute('resize-position', key);
       this.overlayEls.push(overlayEl);
-    }
+    });
 
     return this.overlayEls;
   }
@@ -105,8 +106,6 @@ class TouchResize {
 
     overlayEls.forEach(overlayEl => {
       let key = overlayEl.getAttribute('resize-position');
-
-      console.log('key', key);
 
       // set style including position
       top    = key === 'bottom' ? window.scrollY + resizeElBCR.bottom - 2 :

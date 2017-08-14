@@ -1170,7 +1170,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var TouchResize = function () {
-  function TouchResize() {
+  function TouchResize(options) {
     _classCallCheck(this, TouchResize);
 
     this.els = [];
@@ -1179,13 +1179,14 @@ var TouchResize = function () {
     this.startHeight;
     this.overlayEls = [];
 
-    var defaultOptions = { right: null, bottom: null };
+    var defaultOptions = { positions: 'right, bottom' };
     var args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)), defaultOptions);
 
     var _ref = [args.elements, args.options];
     this.els = _ref[0];
     this.options = _ref[1];
 
+    console.log('TouchResize', 'this.els', this.els, 'this.options', this.options);
 
     window.addEventListener('load', this.init.bind(this));
   }
@@ -1209,7 +1210,6 @@ var TouchResize = function () {
   }, {
     key: 'resizeStartHandler',
     value: function resizeStartHandler(e) {
-      console.log('TouchResize .......resize-start', e);
       var resizeEl = e.resizeFor;
       var resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
       var resizePosition = e.target.getAttribute('resize-direction');
@@ -1253,6 +1253,8 @@ var TouchResize = function () {
   }, {
     key: 'createResizeOverlays',
     value: function createResizeOverlays(options) {
+      var _this2 = this;
+
       /* eslint no-unused-vars: 0 */
       var overlayEl = void 0;
       var top = void 0,
@@ -1261,11 +1263,14 @@ var TouchResize = function () {
           height = void 0,
           cursor = void 0;
 
-      for (var key in options) {
+      var positions = options.positions.split(',').map(function (p) {
+        return p.trim();
+      });
+      positions.forEach(function (key) {
         overlayEl = document.createElement('div');
         overlayEl.setAttribute('resize-position', key);
-        this.overlayEls.push(overlayEl);
-      }
+        _this2.overlayEls.push(overlayEl);
+      });
 
       return this.overlayEls;
     }
@@ -1281,8 +1286,6 @@ var TouchResize = function () {
 
       overlayEls.forEach(function (overlayEl) {
         var key = overlayEl.getAttribute('resize-position');
-
-        console.log('key', key);
 
         // set style including position
         top = key === 'bottom' ? window.scrollY + resizeElBCR.bottom - 2 : key === 'right' ? window.scrollY + resizeElBCR.top + 1 : 0;
@@ -1303,7 +1306,7 @@ var TouchResize = function () {
   }, {
     key: 'applyDraggable',
     value: function applyDraggable(overlayEl, resizeForEl) {
-      var _this2 = this;
+      var _this3 = this;
 
       var drags = [],
           touchDrag = void 0;
@@ -1325,15 +1328,15 @@ var TouchResize = function () {
 
       overlayEl.addEventListener('drag-start', function (e) {
         e.resizeFor = resizeForEl;
-        _this2.resizeStartHandler(e);
+        _this3.resizeStartHandler(e);
       });
       overlayEl.addEventListener('drag-move', function (e) {
         e.resizeFor = resizeForEl;
-        _this2.resizeMoveHandler(e);
+        _this3.resizeMoveHandler(e);
       });
       overlayEl.addEventListener('drag-end', function (e) {
         e.resizeFor = resizeForEl;
-        _this2.resizeEndHandler(e);
+        _this3.resizeEndHandler(e);
       });
 
       return overlayEl;
