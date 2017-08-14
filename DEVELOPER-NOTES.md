@@ -1,6 +1,17 @@
 updating..
 Note: Here are some useful tips when dealing with touch events
 
+If the first two touch points are A1 and B1, and 
+the second two touch points are A2 and B2, then 
+
+D1=A1-B1 represents the starting angle and
+D2=A2-B2 represents the finishing angle, and 
+
+the change in angle will be something like atan2(D2.y, D2.x)-atan2(D1.y, D1.x) 
+
+var angleDeg = Math.atan2(D2.y - D1.y, D2.x - D1.x) * 180 / Math.PI;
+
+
 Thanks to: 
   - https://www.html5rocks.com/en/mobile/touchandmouse/
   - http://www.creativebloq.com/javascript/make-your-site-work-touch-devices-51411644

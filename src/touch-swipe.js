@@ -19,7 +19,7 @@ class TouchSwipe {
     let defaultOptions, args;
 
     defaultOptions = {minMove: 50};
-    args = TouchUI.parseArguments(Array.from(arguments), defaultOptions);
+    args = TouchUI.parseArguments([...arguments], defaultOptions);
     [this.els, this.options]  = [args.elements, args.options];
 
     this.touch = new TouchUI(); // sets basic touch events by watching start, move, and end
@@ -29,16 +29,16 @@ class TouchSwipe {
   init() {
     this.els.forEach(el => {
       TouchUI.disableDefaultTouchBehaviour(el);
-      el.addEventListener(TouchUI.touchMove,  this.touchMoveHandler.bind(this), {passive: true});
+      el.addEventListener(TouchUI.touchEnd,  this.touchEndHandler.bind(this), {passive: true});
     });
   }
 
-  touchMoveHandler(e) {
+  touchEndHandler(e) {
     let move, eventName;
 
     if (!this.touch.dragEl) { // current under dragging
       move = this.touch.getMove();
-      if (move.length > this.options.minMove) {
+      if (move.distance > this.options.minMove) {
         eventName = 'swipe-' + move.direction;
         TouchUI.fireTouchEvent(e.target, eventName, e);
       }

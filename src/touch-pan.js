@@ -41,7 +41,7 @@ class TouchPan {
 
     this.els.forEach(el => {
       TouchUI.disableDefaultTouchBehaviour(el);
-      el.addEventListener(TouchUI.touchStart, this.handlers.start);
+      el.addEventListener(TouchUI.touchStart, this.handlers.start, {passive: true});
     });
 
     this.panStartAt = null;
@@ -49,7 +49,7 @@ class TouchPan {
 
   // when touch starts add pan-related listeners
   addPanListeners(e) {
-    e.target.addEventListener(TouchUI.touchMove,  this.handlers.move);
+    e.target.addEventListener(TouchUI.touchMove,  this.handlers.move, {passive: true});
     e.target.addEventListener(TouchUI.touchEnd,   this.handlers.end);
     e.target.addEventListener(TouchUI.touchLeave, this.handlers.end);
   }

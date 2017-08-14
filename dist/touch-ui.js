@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -83,54 +83,12 @@ return /******/ (function(modules) { // webpackBootstrap
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.TouchPan = exports.TouchSwipe = exports.TouchDrop = exports.TouchDrag = exports.TouchUI = undefined;
-
-var _touchUi = __webpack_require__(1);
-
-var _touchUi2 = _interopRequireDefault(_touchUi);
-
-var _touchDrag = __webpack_require__(2);
-
-var _touchDrag2 = _interopRequireDefault(_touchDrag);
-
-var _touchDrop = __webpack_require__(3);
-
-var _touchDrop2 = _interopRequireDefault(_touchDrop);
-
-var _touchSwipe = __webpack_require__(4);
-
-var _touchSwipe2 = _interopRequireDefault(_touchSwipe);
-
-var _touchPan = __webpack_require__(5);
-
-var _touchPan2 = _interopRequireDefault(_touchPan);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.TouchUI = _touchUi2.default;
-exports.TouchDrag = _touchDrag2.default;
-exports.TouchDrop = _touchDrop2.default;
-exports.TouchSwipe = _touchSwipe2.default;
-exports.TouchPan = _touchPan2.default;
-
-// for browser environment with `<script>` tag
-
-window && (window.TouchUI = _touchUi2.default);
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -154,11 +112,11 @@ var TouchUI = function () {
 
     if (!touchUIInstance) {
       touchUIInstance = this;
-      this.startPosEvent = null; // position touch started
-      this.startAt = null; // time touch  started
+      this.startTouches = null; // position touch started
+      this.prevTouches = null; // previous touch position when touch move
+      this.endTouches = null; // the current touch position
 
-      this.prevPosEvent = null; // previous touch position when touch move
-      this.endPosEvent = null; // the current touch position
+      this.startAt = null; // time touch  started
 
       this.lastTouchEventName = null; // name of last event. e.g. tap, double-tap
       this.lastTouchEventAt = null; // time of last event
@@ -197,9 +155,9 @@ var TouchUI = function () {
     value: function touchStartHandler(e) {
       var _this = this;
 
-      this.startPosEvent = e;
+      this.startTouches = e.changedTouches || [e];
       this.startAt = new Date().getTime();
-      this.holeHappened = false;
+      this.holdHappened = false;
 
       clearTimeout(this.tapTimer);
       clearTimeout(this.holdTimer);
@@ -211,25 +169,25 @@ var TouchUI = function () {
         _this.holdHappened = true;
         clearTimeout(_this.holdTimer);
       }, TouchUI.HOLD_TIME);
-      this.prevPosEvent = this.startPosEvent;
+      this.prevTouches = this.startTouches;
     }
   }, {
     key: 'touchMoveHandler',
     value: function touchMoveHandler(e) {
-      this.endPosEvent = e;
-      this.lastMove = TouchUI.calcMove(this.prevPosEvent, this.endPosEvent);
-      if (this.getMove().length > TouchUI.SMALL_MOVE) {
+      this.endTouches = e.changedTouches || [e];
+      this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches, 0); // 0:index
+      if (this.getMove().distance > TouchUI.SMALL_MOVE) {
         // not a small movement
         clearTimeout(this.holdTimer);
         clearTimeout(this.tapTimer);
       }
-      this.prevPosEvent = this.endPosEvent;
+      this.prevTouches = this.endTouches;
     }
   }, {
     key: 'touchEndHandler',
     value: function touchEndHandler(e) {
-      this.endPosEvent = e;
-      if (this.getMove().length < TouchUI.SMALL_MOVE) {
+      this.endTouches = e.changedTouches || [e];
+      if (this.getMove().distance < TouchUI.SMALL_MOVE) {
         // if little moved
         var eventName = this.lastTouchEventName === 'tap' ? 'double-tap' : this.lastTouchEventName === 'double-tap' ? 'triple-tap' : 'tap';
 
@@ -243,10 +201,10 @@ var TouchUI = function () {
     value: function touchResetHandler(e) {
       var _this2 = this;
 
-      this.startPosEvent = null;
+      this.startTouches = null;
       this.startAt = null;
-      this.prevPosEvent = null;
-      this.endPosEvent = null;
+      this.prevTouches = null;
+      this.endTouches = null;
       this.lastMove = null;
       this.holdHappened = false;
       clearTimeout(this.holdTimer);
@@ -261,15 +219,47 @@ var TouchUI = function () {
   }, {
     key: 'getMove',
     value: function getMove() {
-      return TouchUI.calcMove(this.startPosEvent, this.endPosEvent);
+      return TouchUI.calcMove(this.startTouches, this.endTouches, 0); // 0: index
+    }
+
+    /**
+     * moves of two finger touches.
+     * returns length and distance of two touches
+     * e.g. {
+     *   numTouches: 2,
+     *   diffTouchDistance: 10,
+     *   1: {x: 3, y: 4, distance: 5, direction: 'left'},
+     *   2: {x: 2, y: 3, distance: 4, direction: 'right'}
+     * }
+     */
+
+  }, {
+    key: 'getMoves',
+    value: function getMoves() {
+      var staTouches = this.startTouches;
+      var endTouches = this.endTouches;
+      var moves = {};
+
+      // simulate a fake touch point for non-mobile device if defined
+      if (this.endTouches && this.startTouches) {
+        if (!this.endTouches[1] && this.simulatedTouch) {
+          this.endTouches[1] = this.simulatedTouch;
+          this.startTouches[1] = this.simulatedTouch;
+        }
+
+        if (this.endTouches.length === 2) {
+          moves.diffTouchDistance = // distance of movement between two touches
+          TouchUI.getDistance(endTouches[0], endTouches[1]) - // when ends
+          TouchUI.getDistance(staTouches[0], staTouches[1]); // when starts
+          // moves.rotationDegree = TouchUI.getRotationDegree(staTouches, endTouches);
+        }
+      }
+      return moves;
     }
   }]);
 
   return TouchUI;
 }();
-
-exports.default = TouchUI;
-
 
 TouchUI.isTouch = function () {
   return 'ontouchstart' in window || navigator.MaxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
@@ -321,31 +311,9 @@ TouchUI.fireTouchEvent = function (el, eventName, orgEvent, eventData) {
 };
 
 TouchUI.getStyle = function (elem, prop) {
-  var style = void 0;
+  var style = elem.currentStyle ? elem.currentStyle : window.getComputedStyle(elem, null);
 
-  if (elem.currentStyle) {
-    style = elem.currentStyle[prop];
-  } else if (window.getComputedStyle) {
-    style = window.getComputedStyle(elem, null)[prop];
-  }
-  return style;
-};
-
-TouchUI.getOverlappingEl = function (inEl, outEls) {
-  var rect1 = inEl.getBoundingClientRect(),
-      rect2 = void 0,
-      overlap = void 0;
-  var ret = void 0;
-
-  for (var i = 0; i < outEls.length; i++) {
-    rect2 = outEls[i].getBoundingClientRect();
-    overlap = !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
-    if (overlap) {
-      ret = outEls[i];
-      break;
-    }
-  }
-  return ret;
+  return prop ? style[prop] : style;
 };
 
 TouchUI.disableDefaultTouchBehaviour = function (el) {
@@ -356,20 +324,20 @@ TouchUI.disableDefaultTouchBehaviour = function (el) {
   return el;
 };
 
-TouchUI.calcMove = function (startPosEvent, endPosEvent) {
-  var move = { x: 0, y: 0, length: 0, direction: null };
+TouchUI.calcMove = function (startTouches, endTouches) {
+  var index = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 0;
+
+  var move = { x: 0, y: 0, distance: 0, direction: null };
   var staPos = void 0,
       endPos = void 0,
       startX = void 0,
       startY = void 0,
       endX = void 0,
-      endY = void 0,
-      moveX = void 0,
-      moveY = void 0;
+      endY = void 0;
 
-  if (startPosEvent && endPosEvent) {
-    staPos = startPosEvent.touches && startPosEvent.touches[0] ? startPosEvent.touches[0] : startPosEvent.changedTouches && startPosEvent.changedTouches[0] ? startPosEvent.changedTouches[0] : startPosEvent;
-    endPos = endPosEvent.touches && endPosEvent.touches[0] ? endPosEvent.touches[0] : endPosEvent.changedTouches && endPosEvent.changedTouches[0] ? endPosEvent.changedTouches[0] : endPosEvent;
+  if (startTouches && endTouches) {
+    staPos = startTouches[index];
+    endPos = endTouches[index];
 
     var _ref = [staPos.clientX, staPos.clientY];
     startX = _ref[0];
@@ -380,23 +348,55 @@ TouchUI.calcMove = function (startPosEvent, endPosEvent) {
     var _ref3 = [endX - startX, endY - startY];
     move.x = _ref3[0];
     move.y = _ref3[1];
-    var _ref4 = [Math.abs(move.x), Math.abs(move.y)];
-    moveX = _ref4[0];
-    moveY = _ref4[1];
 
-    move.direction = moveX > moveY && startX > endX ? 'left' : moveX > moveY && startX <= endX ? 'right' : moveX <= moveY && startY > endY ? 'up' : moveX <= moveY && startY <= endY ? 'down' : null;
-    move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
+
+    move.direction = TouchUI.getDirection(staPos, endPos);
+    move.distance = TouchUI.getDistance(staPos, endPos);
   }
+
   return move;
+};
+
+TouchUI.getDistance = function (staPos, endPos) {
+  return Math.round(Math.sqrt(Math.pow(staPos.clientX - endPos.clientX, 2) + Math.pow(staPos.clientY - endPos.clientY, 2)));
+};
+
+// left, right, up, down
+TouchUI.getDirection = function (staPos, endPos) {
+  var startX = void 0,
+      startY = void 0,
+      endX = void 0,
+      endY = void 0,
+      moveX = void 0,
+      moveY = void 0,
+      direction = void 0;
+
+  var _ref4 = [staPos.clientX, staPos.clientY];
+  startX = _ref4[0];
+  startY = _ref4[1];
+  var _ref5 = [endPos.clientX, endPos.clientY];
+  endX = _ref5[0];
+  endY = _ref5[1];
+  var _ref6 = [Math.abs(endX - startX), Math.abs(endY - startY)];
+  moveX = _ref6[0];
+  moveY = _ref6[1];
+
+  direction = moveX > moveY && startX > endX ? 'left' : moveX > moveY && startX <= endX ? 'right' : moveX <= moveY && startY > endY ? 'up' : moveX <= moveY && startY <= endY ? 'down' : null;
+
+  return direction;
 };
 
 TouchUI.parseArguments = function (args) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   // args is an array, Array.from(arguments), not arguments
+  if (!Array.isArray(args)) throw new Error('Invalid arguments. Must be an array');
+
   var parsed = { elements: [], options: options };
 
   args.forEach(function (arg) {
-    if (Array.isArray(arg)) {
+    if (typeof arg === 'string') {
+      parsed.elements = parsed.elements.concat([].concat(_toConsumableArray(document.querySelectorAll(arg))));
+    } else if (Array.isArray(arg)) {
       parsed.elements = parsed.elements.concat(arg);
     } else if (arg instanceof HTMLElement) {
       parsed.elements.push(arg);
@@ -425,10 +425,32 @@ TouchUI.getOverlappingEl = function (el, candidates) {
   }
   return ret;
 };
+
+/* Unused as of now
+TouchUI.getRotationDegree = function (start, end) {
+  let diffTouch1 = {
+    x: (start[0].clientX - start[1].clientX),
+    y: (start[0].clientY - start[1].clientY)
+  };
+  let diffTouch2 = {
+    x: (end[0].clientX - end[1].clientX),
+    y: (end[0].clientY - end[1].clientY)
+  };
+
+  var degree = Math.atan2(
+      diffTouch2.y - diffTouch1.y,
+      diffTouch2.x - diffTouch1.x
+    ) * 180 / Math.PI;
+
+  return degree;
+};
+*/
+
+exports.default = TouchUI;
 module.exports = exports['default'];
 
 /***/ }),
-/* 2 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -461,7 +483,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
 
-var _touchUi = __webpack_require__(1);
+var _touchUi = __webpack_require__(0);
 
 var _touchUi2 = _interopRequireDefault(_touchUi);
 
@@ -475,7 +497,7 @@ var TouchDrag = function () {
 
     this.els = [];
     var defaultOptions = { axis: 'xy' };
-    var args = _touchUi2.default.parseArguments(Array.from(arguments), defaultOptions);
+    var args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)), defaultOptions);
 
     var _ref = [args.elements, args.options];
     this.els = _ref[0];
@@ -504,6 +526,7 @@ var TouchDrag = function () {
 
       this.els.forEach(function (el) {
         _touchUi2.default.disableDefaultTouchBehaviour(el);
+        el.setAttribute('touch-drag', 'true');
         el.addEventListener('hold', function (e) {
           return _this.addDragListeners(document.body);
         });
@@ -517,6 +540,7 @@ var TouchDrag = function () {
   }, {
     key: 'addDragListeners',
     value: function addDragListeners(el) {
+      el.setAttribute('touch-drag', 'start');
       el.addEventListener(_touchUi2.default.touchMove, this.dragMoveFunc);
       el.addEventListener(_touchUi2.default.touchEnd, this.dragEndFunc);
       el.addEventListener(_touchUi2.default.touchLeave, this.dragEndFunc);
@@ -527,6 +551,7 @@ var TouchDrag = function () {
       el.removeEventListener(_touchUi2.default.touchMove, this.dragMoveFunc);
       el.removeEventListener(_touchUi2.default.touchEnd, this.dragEndFunc);
       el.removeEventListener(_touchUi2.default.touchLeave, this.dragEndFunc);
+      el.setAttribute('touch-drag', 'end');
     }
   }, {
     key: 'dragMoveHandler',
@@ -539,7 +564,7 @@ var TouchDrag = function () {
       if (this.dragStartAt) {
         // if drag started
         _touchUi2.default.fireTouchEvent(this.touch.dragEl, 'drag-move', e);
-      } else {
+      } else if (e.target.getAttribute('touch-drag')) {
         this.dragStartAt = new Date().getTime();
         this.touch.dragEl = e.target;
         _touchUi2.default.fireTouchEvent(e.target, 'drag-start', e);
@@ -555,11 +580,13 @@ var TouchDrag = function () {
         e.target.style.position = 'absolute';
         e.target.style.margin = 0;
       }
-      move = this.touch.getMove();
-      dragX = this.options.axis.indexOf('x') !== -1 ? move.x : 0;
-      dragY = this.options.axis.indexOf('y') !== -1 ? move.y : 0;
-      this.touch.dragEl.style.left = this.dragStartStyle.bcr.left + window.scrollX + dragX + 'px';
-      this.touch.dragEl.style.top = this.dragStartStyle.bcr.top + window.scrollY + dragY + 'px';
+      if (this.touch.dragEl) {
+        move = this.touch.getMove();
+        dragX = this.options.axis.indexOf('x') !== -1 ? move.x : 0;
+        dragY = this.options.axis.indexOf('y') !== -1 ? move.y : 0;
+        this.touch.dragEl.style.left = this.dragStartStyle.bcr.left + window.scrollX + dragX + 'px';
+        this.touch.dragEl.style.top = this.dragStartStyle.bcr.top + window.scrollY + dragY + 'px';
+      }
     }
   }, {
     key: 'dragEndHandler',
@@ -595,6 +622,60 @@ exports.default = TouchDrag;
 module.exports = exports['default'];
 
 /***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.TouchResize = exports.TouchZoom = exports.TouchPan = exports.TouchSwipe = exports.TouchDrop = exports.TouchDrag = exports.TouchUI = undefined;
+
+var _touchUi = __webpack_require__(0);
+
+var _touchUi2 = _interopRequireDefault(_touchUi);
+
+var _touchDrag = __webpack_require__(1);
+
+var _touchDrag2 = _interopRequireDefault(_touchDrag);
+
+var _touchDrop = __webpack_require__(3);
+
+var _touchDrop2 = _interopRequireDefault(_touchDrop);
+
+var _touchSwipe = __webpack_require__(4);
+
+var _touchSwipe2 = _interopRequireDefault(_touchSwipe);
+
+var _touchPan = __webpack_require__(5);
+
+var _touchPan2 = _interopRequireDefault(_touchPan);
+
+var _touchZoom = __webpack_require__(6);
+
+var _touchZoom2 = _interopRequireDefault(_touchZoom);
+
+var _touchResize = __webpack_require__(7);
+
+var _touchResize2 = _interopRequireDefault(_touchResize);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.TouchUI = _touchUi2.default;
+exports.TouchDrag = _touchDrag2.default;
+exports.TouchDrop = _touchDrop2.default;
+exports.TouchSwipe = _touchSwipe2.default;
+exports.TouchPan = _touchPan2.default;
+exports.TouchZoom = _touchZoom2.default;
+exports.TouchResize = _touchResize2.default;
+
+// for browser environment with `<script>` tag
+
+window && (window.TouchUI = _touchUi2.default);
+
+/***/ }),
 /* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -622,7 +703,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
 
-var _touchUi = __webpack_require__(1);
+var _touchUi = __webpack_require__(0);
 
 var _touchUi2 = _interopRequireDefault(_touchUi);
 
@@ -636,7 +717,7 @@ var TouchDrop = function () {
 
     var args = void 0;
 
-    args = _touchUi2.default.parseArguments(Array.from(arguments));
+    args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)));
 
     this.dropzoneEls = [];
     this.options = {};
@@ -732,7 +813,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
 
-var _touchUi = __webpack_require__(1);
+var _touchUi = __webpack_require__(0);
 
 var _touchUi2 = _interopRequireDefault(_touchUi);
 
@@ -748,7 +829,7 @@ var TouchSwipe = function () {
         args = void 0;
 
     defaultOptions = { minMove: 50 };
-    args = _touchUi2.default.parseArguments(Array.from(arguments), defaultOptions);
+    args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)), defaultOptions);
     var _ref = [args.elements, args.options];
     this.els = _ref[0];
     this.options = _ref[1];
@@ -765,19 +846,19 @@ var TouchSwipe = function () {
 
       this.els.forEach(function (el) {
         _touchUi2.default.disableDefaultTouchBehaviour(el);
-        el.addEventListener(_touchUi2.default.touchMove, _this.touchMoveHandler.bind(_this), { passive: true });
+        el.addEventListener(_touchUi2.default.touchEnd, _this.touchEndHandler.bind(_this), { passive: true });
       });
     }
   }, {
-    key: 'touchMoveHandler',
-    value: function touchMoveHandler(e) {
+    key: 'touchEndHandler',
+    value: function touchEndHandler(e) {
       var move = void 0,
           eventName = void 0;
 
       if (!this.touch.dragEl) {
         // current under dragging
         move = this.touch.getMove();
-        if (move.length > this.options.minMove) {
+        if (move.distance > this.options.minMove) {
           eventName = 'swipe-' + move.direction;
           _touchUi2.default.fireTouchEvent(e.target, eventName, e);
         }
@@ -825,7 +906,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       */
 
 
-var _touchUi = __webpack_require__(1);
+var _touchUi = __webpack_require__(0);
 
 var _touchUi2 = _interopRequireDefault(_touchUi);
 
@@ -868,7 +949,7 @@ var TouchPan = function () {
 
       this.els.forEach(function (el) {
         _touchUi2.default.disableDefaultTouchBehaviour(el);
-        el.addEventListener(_touchUi2.default.touchStart, _this.handlers.start);
+        el.addEventListener(_touchUi2.default.touchStart, _this.handlers.start, { passive: true });
       });
 
       this.panStartAt = null;
@@ -879,7 +960,7 @@ var TouchPan = function () {
   }, {
     key: 'addPanListeners',
     value: function addPanListeners(e) {
-      e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move);
+      e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move, { passive: true });
       e.target.addEventListener(_touchUi2.default.touchEnd, this.handlers.end);
       e.target.addEventListener(_touchUi2.default.touchLeave, this.handlers.end);
     }
@@ -925,6 +1006,351 @@ _touchUi2.default.pannable = function () {
 };
 
 exports.default = TouchPan;
+module.exports = exports['default'];
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Extends functionality of TouchUI
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Fires the following event to the given elements
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - zoom-start
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - zoom-move
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   - zoom-end
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * How it works
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   1. when hold happens, adds zoom listeners to the element
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   2. with minimal touch moves on the element, it fires `zoom-start`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *      With zoom started and touch moves, it fiStephen Elliott <Stephen.Elliott@rci.rogers.com>res `zoom-move`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *   3. when touch move ends and if zoom started, it fires `zoom-end`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+var _touchUi = __webpack_require__(0);
+
+var _touchUi2 = _interopRequireDefault(_touchUi);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var TouchZoom = function () {
+  function TouchZoom() {
+    _classCallCheck(this, TouchZoom);
+
+    this.els = [];
+    var args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)));
+
+    var _ref = [args.elements, args.options];
+    this.els = _ref[0];
+    this.options = _ref[1];
+
+
+    this.touch; // singleton instance of TouchUI
+    this.zoomStartAt; // time of hold + move happened
+
+    this.handlers = {
+      start: this.addZoomListeners.bind(this),
+      move: this.zoomMoveHandler.bind(this),
+      end: this.zoomEndHandler.bind(this)
+    };
+
+    this.init();
+  }
+
+  _createClass(TouchZoom, [{
+    key: 'init',
+    value: function init() {
+      var _this = this;
+
+      this.touch = new _touchUi2.default(); // sets basic touch events by watching start, move, and end
+
+      this.els.forEach(function (el) {
+        _touchUi2.default.disableDefaultTouchBehaviour(el);
+        el.addEventListener(_touchUi2.default.touchStart, _this.handlers.start, { passive: true });
+      });
+    }
+
+    // when touch starts add zoom-related listeners
+
+  }, {
+    key: 'addZoomListeners',
+    value: function addZoomListeners(e) {
+      console.log(1111111111111, e.target);
+      e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move, { passive: true });
+      e.target.addEventListener(_touchUi2.default.touchEnd, this.handlers.end);
+      e.target.addEventListener(_touchUi2.default.touchLeave, this.handlers.end);
+    }
+  }, {
+    key: 'removeZoomListeners',
+    value: function removeZoomListeners(el) {
+      el.removeEventListener(_touchUi2.default.touchMove, this.handlers.move);
+      el.removeEventListener(_touchUi2.default.touchEnd, this.handlers.end);
+      el.removeEventListener(_touchUi2.default.touchLeave, this.handlers.end);
+    }
+  }, {
+    key: 'zoomMoveHandler',
+    value: function zoomMoveHandler(e) {
+      var moves = this.touch.getMoves();
+
+      if (!this.zoomStartAt && Math.abs(moves.diffTouchDistance) > 20) {
+        _touchUi2.default.fireTouchEvent(e.target, 'zoom-start', e, { moves: moves });
+        this.zoomStartAt = new Date().getTime();
+      } else if (this.zoomStartAt) {
+        _touchUi2.default.fireTouchEvent(e.target, 'zoom-move', e, { moves: moves });
+      }
+    }
+  }, {
+    key: 'zoomEndHandler',
+    value: function zoomEndHandler(e) {
+      if (this.zoomStartAt) {
+        _touchUi2.default.fireTouchEvent(e.target, 'zoom-end', e);
+      }
+      this.zoomStartAt = null;
+      this.removeZoomListeners(e.target);
+    }
+  }]);
+
+  return TouchZoom;
+}();
+
+/* alias of `new TouchZoom(..)` */
+
+
+_touchUi2.default.zoomable = function () {
+  return new (Function.prototype.bind.apply(TouchZoom, [null].concat(Array.prototype.slice.call(arguments))))();
+};
+
+exports.default = TouchZoom;
+module.exports = exports['default'];
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Design of resizable
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *  . It uses TouchDrag
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *  . Configuration accepts sides to resize. e.g. bottom, right
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *  . When it is initialized, it adds a draggable element on the top of indicated side
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *    to resize the width or height of the element;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *  . Bottom has the cursor of `ns-resize`, and right has the cursor of `ew-resize`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *  . When resize starts, it saves the start position and fires `resize-start`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *  . When resize, it fires `resize-move`
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      *  . When resize ends, it fires `resize-end.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+var _touchUi = __webpack_require__(0);
+
+var _touchUi2 = _interopRequireDefault(_touchUi);
+
+var _touchDrag = __webpack_require__(1);
+
+var _touchDrag2 = _interopRequireDefault(_touchDrag);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var TouchResize = function () {
+  function TouchResize() {
+    _classCallCheck(this, TouchResize);
+
+    this.els = [];
+    this.touch = new _touchUi2.default();
+    this.startWidth;
+    this.startHeight;
+    this.overlayEls = [];
+
+    var defaultOptions = { right: null, bottom: null };
+    var args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)), defaultOptions);
+
+    var _ref = [args.elements, args.options];
+    this.els = _ref[0];
+    this.options = _ref[1];
+
+
+    window.addEventListener('load', this.init.bind(this));
+  }
+
+  _createClass(TouchResize, [{
+    key: 'init',
+    value: function init() {
+      var _this = this;
+
+      this.els.forEach(function (resizeEl) {
+        _this.overlayEls = _this.createResizeOverlays(_this.options);
+        _this.styleOverlayEls(resizeEl, _this.overlayEls);
+        _this.overlayEls.forEach(function (overlayEl) {
+          resizeEl.parentNode.insertBefore(overlayEl, resizeEl.nextSibling);
+          _this.applyDraggable(overlayEl, resizeEl);
+        });
+      });
+
+      this.dragStartAt = null;
+    }
+  }, {
+    key: 'resizeStartHandler',
+    value: function resizeStartHandler(e) {
+      console.log('TouchResize .......resize-start', e);
+      var resizeEl = e.resizeFor;
+      var resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
+      var resizePosition = e.target.getAttribute('resize-direction');
+
+      this.startWidth = resizeElBCR.width;
+      this.startHeight = resizeElBCR.height;
+
+      _touchUi2.default.fireTouchEvent(e.resizeFor, 'resize-start', e, { resizePosition: resizePosition });
+    }
+  }, {
+    key: 'resizeMoveHandler',
+    value: function resizeMoveHandler(e) {
+      var resizeEl = e.resizeFor;
+      var resizePosition = e.target.getAttribute('resize-position');
+      var move = this.touch.getMove();
+
+      if (resizePosition === 'right') {
+        resizeEl.style.width = this.startWidth + move.x + 'px';
+      }
+      if (resizePosition === 'bottom') {
+        resizeEl.style.height = this.startHeight + move.y + 'px';
+      }
+
+      _touchUi2.default.fireTouchEvent(e.resizeFor, 'resize-move', e, {
+        move: move,
+        resizePosition: resizePosition
+      });
+    }
+  }, {
+    key: 'resizeEndHandler',
+    value: function resizeEndHandler(e) {
+      var move = this.touch.getMove();
+      var resizePosition = e.target.getAttribute('resize-position');
+
+      this.styleOverlayEls(e.resizeFor, this.overlayEls);
+      _touchUi2.default.fireTouchEvent(e.resizeFor, 'resize-end', e, {
+        move: move,
+        resizePosition: resizePosition
+      });
+    }
+  }, {
+    key: 'createResizeOverlays',
+    value: function createResizeOverlays(options) {
+      /* eslint no-unused-vars: 0 */
+      var overlayEl = void 0;
+      var top = void 0,
+          left = void 0,
+          width = void 0,
+          height = void 0,
+          cursor = void 0;
+
+      for (var key in options) {
+        overlayEl = document.createElement('div');
+        overlayEl.setAttribute('resize-position', key);
+        this.overlayEls.push(overlayEl);
+      }
+
+      return this.overlayEls;
+    }
+  }, {
+    key: 'styleOverlayEls',
+    value: function styleOverlayEls(resizeEl, overlayEls) {
+      var resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
+      var top = void 0,
+          left = void 0,
+          width = void 0,
+          height = void 0,
+          cursor = void 0;
+
+      overlayEls.forEach(function (overlayEl) {
+        var key = overlayEl.getAttribute('resize-position');
+
+        console.log('key', key);
+
+        // set style including position
+        top = key === 'bottom' ? window.scrollY + resizeElBCR.bottom - 2 : key === 'right' ? window.scrollY + resizeElBCR.top + 1 : 0;
+        left = key === 'bottom' ? window.scrollX + resizeElBCR.left - 1 : key === 'right' ? window.scrollX + resizeElBCR.right - 2 : 0;
+        width = key === 'bottom' ? resizeElBCR.width - 2 : key === 'right' ? 3 : 0;
+        height = key === 'bottom' ? 3 : key === 'right' ? resizeElBCR.height - 2 : 0;
+        cursor = key === 'bottom' ? 'ns-resize' : key === 'right' ? 'ew-resize' : 0;
+
+        overlayEl.style.position = 'absolute';
+        overlayEl.style.top = top + 'px';
+        overlayEl.style.left = left + 'px';
+        overlayEl.style.width = width + 'px';
+        overlayEl.style.height = height + 'px';
+        overlayEl.style.cursor = cursor;
+        overlayEl.style.backgroundColor = 'rgba(0,0,0,0.0)';
+      });
+    }
+  }, {
+    key: 'applyDraggable',
+    value: function applyDraggable(overlayEl, resizeForEl) {
+      var _this2 = this;
+
+      var drags = [],
+          touchDrag = void 0;
+      var resizePosition = void 0,
+          dragAxis = void 0;
+
+      // add event listeners
+      resizePosition = overlayEl.getAttribute('resize-position');
+      dragAxis = resizePosition === 'right' ? 'x' : resizePosition === 'bottom' ? 'y' : 'xy';
+      touchDrag = new _touchDrag2.default(overlayEl, { axis: dragAxis, recoverWhenEnd: false });
+
+      overlayEl.addEventListener('hold', function (e) {
+        e.target.style.boxShadow = '0px 0px 2px 2px rgba(255,255,0,1)';
+      });
+
+      overlayEl.addEventListener(_touchUi2.default.touchEnd, function (e) {
+        e.target.style.boxShadow = '';
+      });
+
+      overlayEl.addEventListener('drag-start', function (e) {
+        e.resizeFor = resizeForEl;
+        _this2.resizeStartHandler(e);
+      });
+      overlayEl.addEventListener('drag-move', function (e) {
+        e.resizeFor = resizeForEl;
+        _this2.resizeMoveHandler(e);
+      });
+      overlayEl.addEventListener('drag-end', function (e) {
+        e.resizeFor = resizeForEl;
+        _this2.resizeEndHandler(e);
+      });
+
+      return overlayEl;
+    }
+  }]);
+
+  return TouchResize;
+}();
+
+/* alias of `new TouchDrag(..)` */
+
+
+_touchUi2.default.resizable = function () {
+  return new (Function.prototype.bind.apply(TouchResize, [null].concat(Array.prototype.slice.call(arguments))))();
+};
+
+exports.default = TouchResize;
 module.exports = exports['default'];
 
 /***/ })

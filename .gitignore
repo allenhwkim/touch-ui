@@ -29,3 +29,7 @@ node_modules
 # Remove some common IDE working directories
 .idea
 .vscode
+
+# code coverage
+coverage
+.nyc_output

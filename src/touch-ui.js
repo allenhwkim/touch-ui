@@ -12,16 +12,16 @@
  */
 let touchUIInstance;
 
-export default class TouchUI {
+class TouchUI {
 
   constructor() {
     if (!touchUIInstance) {
       touchUIInstance = this;
-      this.startPosEvent = null;  // position touch started
-      this.startAt = null;   // time touch  started
+      this.startTouches = null;  // position touch started
+      this.prevTouches = null;   // previous touch position when touch move
+      this.endTouches = null;    // the current touch position
 
-      this.prevPosEvent = null;   // previous touch position when touch move
-      this.endPosEvent = null;    // the current touch position
+      this.startAt = null;   // time touch  started
 
       this.lastTouchEventName = null; // name of last event. e.g. tap, double-tap
       this.lastTouchEventAt = null;   // time of last event
@@ -53,9 +53,9 @@ export default class TouchUI {
   }
 
   touchStartHandler(e) {
-    this.startPosEvent = e;
+    this.startTouches = e.changedTouches || [e];
     this.startAt = (new Date()).getTime();
-    this.holeHappened = false;
+    this.holdHappened = false;
 
     clearTimeout(this.tapTimer);
     clearTimeout(this.holdTimer);
@@ -69,22 +69,22 @@ export default class TouchUI {
       this.holdHappened = true;
       clearTimeout(this.holdTimer);
     }, TouchUI.HOLD_TIME);
-    this.prevPosEvent = this.startPosEvent;
+    this.prevTouches = this.startTouches;
   }
 
   touchMoveHandler(e) {
-    this.endPosEvent = e;
-    this.lastMove = TouchUI.calcMove(this.prevPosEvent, this.endPosEvent);
-    if (this.getMove().length > TouchUI.SMALL_MOVE) { // not a small movement
+    this.endTouches = e.changedTouches || [e];
+    this.lastMove = TouchUI.calcMove(this.prevTouches, this.endTouches, 0); // 0:index
+    if (this.getMove().distance > TouchUI.SMALL_MOVE) { // not a small movement
       clearTimeout(this.holdTimer);
       clearTimeout(this.tapTimer);
     }
-    this.prevPosEvent = this.endPosEvent;
+    this.prevTouches = this.endTouches;
   }
 
   touchEndHandler(e) {
-    this.endPosEvent = e;
-    if (this.getMove().length < TouchUI.SMALL_MOVE) { // if little moved
+    this.endTouches = e.changedTouches || [e];
+    if (this.getMove().distance < TouchUI.SMALL_MOVE) { // if little moved
       let eventName =
         this.lastTouchEventName === 'tap' ? 'double-tap' :
         this.lastTouchEventName === 'double-tap' ? 'triple-tap' : 'tap';
@@ -96,10 +96,10 @@ export default class TouchUI {
   }
 
   touchResetHandler(e) {
-    this.startPosEvent = null;
+    this.startTouches = null;
     this.startAt = null;
-    this.prevPosEvent = null;
-    this.endPosEvent = null;
+    this.prevTouches = null;
+    this.endTouches = null;
     this.lastMove = null;
     this.holdHappened = false;
     clearTimeout(this.holdTimer);
@@ -113,9 +113,40 @@ export default class TouchUI {
   }
 
   getMove() {
-    return TouchUI.calcMove(this.startPosEvent, this.endPosEvent);
+    return TouchUI.calcMove(this.startTouches, this.endTouches, 0); // 0: index
   }
 
+  /**
+   * moves of two finger touches.
+   * returns length and distance of two touches
+   * e.g. {
+   *   numTouches: 2,
+   *   diffTouchDistance: 10,
+   *   1: {x: 3, y: 4, distance: 5, direction: 'left'},
+   *   2: {x: 2, y: 3, distance: 4, direction: 'right'}
+   * }
+   */
+  getMoves() {
+    let staTouches = this.startTouches;
+    let endTouches = this.endTouches;
+    let moves = {};
+
+    // simulate a fake touch point for non-mobile device if defined
+    if (this.endTouches && this.startTouches) {
+      if (!this.endTouches[1] && this.simulatedTouch) {
+        this.endTouches[1] = this.simulatedTouch;
+        this.startTouches[1] = this.simulatedTouch;
+      }
+
+      if (this.endTouches.length === 2) {
+        moves.diffTouchDistance =  // distance of movement between two touches
+          TouchUI.getDistance(endTouches[0], endTouches[1]) -  // when ends
+          TouchUI.getDistance(staTouches[0], staTouches[1]);   // when starts
+        // moves.rotationDegree = TouchUI.getRotationDegree(staTouches, endTouches);
+      }
+    }
+    return moves;
+  }
 }
 
 TouchUI.isTouch = function () {
@@ -169,32 +200,9 @@ TouchUI.fireTouchEvent = function (el, eventName, orgEvent, eventData) {
 };
 
 TouchUI.getStyle = function (elem, prop) {
-  let style;
+  let style = elem.currentStyle ? elem.currentStyle : window.getComputedStyle(elem, null);
 
-  if (elem.currentStyle) {
-    style = elem.currentStyle[prop];
-  } else if (window.getComputedStyle) {
-    style = window.getComputedStyle(elem, null)[prop];
-  }
-  return style;
-};
-
-TouchUI.getOverlappingEl = function (inEl, outEls) {
-  let rect1 = inEl.getBoundingClientRect(), rect2, overlap;
-  let ret;
-
-  for (let i = 0; i < outEls.length; i++) {
-    rect2 = outEls[i].getBoundingClientRect();
-    overlap = !(
-      rect1.right < rect2.left ||  rect1.left > rect2.right ||
-      rect1.bottom < rect2.top ||  rect1.top > rect2.bottom
-    );
-    if (overlap) {
-      ret = outEls[i];
-      break;
-    }
-  }
-  return ret;
+  return prop ? style[prop] : style;
 };
 
 TouchUI.disableDefaultTouchBehaviour = function (el) {
@@ -205,38 +213,60 @@ TouchUI.disableDefaultTouchBehaviour = function (el) {
   return el;
 };
 
-TouchUI.calcMove = function (startPosEvent, endPosEvent) {
-  let move = { x: 0, y: 0, length: 0, direction: null };
-  let staPos, endPos, startX, startY, endX, endY, moveX, moveY;
+TouchUI.calcMove = function (startTouches, endTouches, index = 0) {
+  let move = { x: 0, y: 0, distance: 0, direction: null };
+  let staPos, endPos, startX, startY, endX, endY;
 
-  if (startPosEvent && endPosEvent) {
-    staPos = startPosEvent.touches && startPosEvent.touches[0] ? startPosEvent.touches[0] :
-             startPosEvent.changedTouches && startPosEvent.changedTouches[0] ? startPosEvent.changedTouches[0] :
-             startPosEvent;
-    endPos = endPosEvent.touches && endPosEvent.touches[0] ? endPosEvent.touches[0] :
-             endPosEvent.changedTouches && endPosEvent.changedTouches[0] ? endPosEvent.changedTouches[0] :
-             endPosEvent;
+  if (startTouches && endTouches) {
+    staPos = startTouches[index];
+    endPos = endTouches[index];
 
     [startX, startY] = [staPos.clientX, staPos.clientY];
     [endX, endY]     = [endPos.clientX, endPos.clientY];
-
     [move.x, move.y] = [endX - startX, endY - startY];
-    [moveX, moveY]   = [Math.abs(move.x), Math.abs(move.y)];
-    move.direction =
-      (moveX >  moveY) && (startX >  endX) ? 'left' :
-      (moveX >  moveY) && (startX <= endX) ? 'right' :
-      (moveX <= moveY) && (startY >  endY) ? 'up' :
-      (moveX <= moveY) && (startY <= endY) ? 'down' : null;
-    move.length = Math.floor(Math.sqrt(Math.pow(move.x, 2) + Math.pow(move.y, 2)));
+
+    move.direction = TouchUI.getDirection(staPos, endPos);
+    move.distance  = TouchUI.getDistance(staPos, endPos);
   }
+
   return move;
 };
 
+TouchUI.getDistance = function (staPos, endPos) {
+  return Math.round(
+    Math.sqrt(
+      Math.pow(staPos.clientX - endPos.clientX, 2) +
+      Math.pow(staPos.clientY - endPos.clientY, 2)
+    )
+  );
+};
+
+// left, right, up, down
+TouchUI.getDirection = function (staPos, endPos) {
+  let startX, startY, endX, endY, moveX, moveY, direction;
+
+  [startX, startY] = [staPos.clientX, staPos.clientY];
+  [endX, endY]     = [endPos.clientX, endPos.clientY];
+
+  [moveX, moveY]   = [Math.abs(endX - startX), Math.abs(endY - startY)];
+  direction =
+    (moveX >  moveY) && (startX >  endX) ? 'left' :
+    (moveX >  moveY) && (startX <= endX) ? 'right' :
+    (moveX <= moveY) && (startY >  endY) ? 'up' :
+    (moveX <= moveY) && (startY <= endY) ? 'down' : null;
+
+  return direction;
+};
+
 TouchUI.parseArguments = function (args, options = {}) { // args is an array, Array.from(arguments), not arguments
+  if (!Array.isArray(args)) throw new Error('Invalid arguments. Must be an array');
+
   let parsed = {elements: [], options: options};
 
   args.forEach(arg => {
-    if (Array.isArray(arg)) {
+    if (typeof arg === 'string') {
+      parsed.elements = parsed.elements.concat([...document.querySelectorAll(arg)]);
+    } else if (Array.isArray(arg)) {
       parsed.elements = parsed.elements.concat(arg);
     } else if (arg instanceof HTMLElement) {
       parsed.elements.push(arg);
@@ -266,3 +296,25 @@ TouchUI.getOverlappingEl = function (el, candidates) {
   }
   return ret;
 };
+
+/* Unused as of now
+TouchUI.getRotationDegree = function (start, end) {
+  let diffTouch1 = {
+    x: (start[0].clientX - start[1].clientX),
+    y: (start[0].clientY - start[1].clientY)
+  };
+  let diffTouch2 = {
+    x: (end[0].clientX - end[1].clientX),
+    y: (end[0].clientY - end[1].clientY)
+  };
+
+  var degree = Math.atan2(
+      diffTouch2.y - diffTouch1.y,
+      diffTouch2.x - diffTouch1.x
+    ) * 180 / Math.PI;
+
+  return degree;
+};
+*/
+
+export default TouchUI;
