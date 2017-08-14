@@ -48,6 +48,7 @@ class TouchDrag {
 
     this.els.forEach(el => {
       TouchUI.disableDefaultTouchBehaviour(el);
+      el.setAttribute('touch-drag', 'true');
       el.addEventListener('hold', e => this.addDragListeners(document.body));
     });
 
@@ -56,6 +57,7 @@ class TouchDrag {
 
   // when touch starts add drag-related listeners
   addDragListeners(el) {
+    el.setAttribute('touch-drag', 'start');
     el.addEventListener(TouchUI.touchMove,  this.dragMoveFunc);
     el.addEventListener(TouchUI.touchEnd,   this.dragEndFunc);
     el.addEventListener(TouchUI.touchLeave, this.dragEndFunc);
@@ -65,6 +67,7 @@ class TouchDrag {
     el.removeEventListener(TouchUI.touchMove,  this.dragMoveFunc);
     el.removeEventListener(TouchUI.touchEnd,   this.dragEndFunc);
     el.removeEventListener(TouchUI.touchLeave, this.dragEndFunc);
+    el.setAttribute('touch-drag', 'end');
   }
 
   dragMoveHandler(e) {
@@ -72,7 +75,7 @@ class TouchDrag {
 
     if (this.dragStartAt) { // if drag started
       TouchUI.fireTouchEvent(this.touch.dragEl, 'drag-move', e);
-    } else {
+    } else if (e.target.getAttribute('touch-drag')) {
       this.dragStartAt = (new Date()).getTime();
       this.touch.dragEl = e.target;
       TouchUI.fireTouchEvent(e.target, 'drag-start', e);
@@ -88,11 +91,13 @@ class TouchDrag {
       e.target.style.position = 'absolute';
       e.target.style.margin = 0;
     }
-    move = this.touch.getMove();
-    dragX = (this.options.axis.indexOf('x') !== -1) ? move.x : 0;
-    dragY = (this.options.axis.indexOf('y') !== -1) ? move.y : 0;
-    this.touch.dragEl.style.left = (this.dragStartStyle.bcr.left + window.scrollX + dragX) + 'px';
-    this.touch.dragEl.style.top  = (this.dragStartStyle.bcr.top  + window.scrollY + dragY) + 'px';
+    if (this.touch.dragEl) {
+      move = this.touch.getMove();
+      dragX = (this.options.axis.indexOf('x') !== -1) ? move.x : 0;
+      dragY = (this.options.axis.indexOf('y') !== -1) ? move.y : 0;
+      this.touch.dragEl.style.left = (this.dragStartStyle.bcr.left + window.scrollX + dragX) + 'px';
+      this.touch.dragEl.style.top  = (this.dragStartStyle.bcr.top  + window.scrollY + dragY) + 'px';
+    }
   }
 
   dragEndHandler(e) {

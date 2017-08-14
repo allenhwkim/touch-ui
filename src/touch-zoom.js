@@ -21,7 +21,6 @@ class TouchZoom {
     let args = TouchUI.parseArguments([...arguments]);
 
     [this.els, this.options] = [args.elements, args.options];
-    console.log(0, this.els);
 
     this.touch;         // singleton instance of TouchUI
     this.zoomStartAt;    // time of hold + move happened
@@ -61,7 +60,6 @@ class TouchZoom {
 
   zoomMoveHandler(e) {
     let moves = this.touch.getMoves();
-    console.log(2222222222222, e.target);
 
     if (!this.zoomStartAt && Math.abs(moves.diffTouchDistance) > 20) {
       TouchUI.fireTouchEvent(e.target, 'zoom-start', e, {moves: moves});

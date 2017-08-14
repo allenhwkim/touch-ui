@@ -200,14 +200,9 @@ TouchUI.fireTouchEvent = function (el, eventName, orgEvent, eventData) {
 };
 
 TouchUI.getStyle = function (elem, prop) {
-  let style;
+  let style = elem.currentStyle ? elem.currentStyle : window.getComputedStyle(elem, null);
 
-  if (elem.currentStyle) {
-    style = elem.currentStyle[prop];
-  } else if (window.getComputedStyle) {
-    style = window.getComputedStyle(elem, null)[prop];
-  }
-  return style;
+  return prop ? style[prop] : style;
 };
 
 TouchUI.disableDefaultTouchBehaviour = function (el) {

@@ -9,7 +9,7 @@
     "clean": "rimraf dist",
     "build": "webpack --env build",
     "dev": "webpack --progress --colors --watch --env dev",
-    "test": "ava"
+    "test": "nyc ava"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,7 @@
     "drop",
     "tap",
     "hold",
-    "swipte"
+    "swipe"
   ],
   "devDependencies": {
     "ava": "^0.21.0",
@@ -42,16 +42,37 @@
     "chai": "3.5.0",
     "eslint": "3.19.0",
     "eslint-loader": "1.7.1",
+    "nyc": "^11.1.0",
     "rimraf": "^2.6.1",
     "sinon": "^3.0.0",
     "webpack": "3.1.0",
     "yargs": "7.1.0"
+  },
+  "babel": {
+    "presets": ["es2015"],
+    "plugins": ["transform-runtime"],
+    "env": {
+      "development": {
+        "sourceMaps": "inline"
+      }
+    }
+  },
+  "nyc": {
+    "exclude": [
+      "**/*.spec.js",
+      "test/**/*"
+    ],
+    "retporter": [
+      "text-lcov",
+      "html"
+    ]
   },
   "ava": {
     "files": [
       "src/**/*.spec.js"
     ],
     "require": [
+      "babel-core/register",
       "babel-register",
       "./test/helpers/setup-browser-env.js"
     ],
