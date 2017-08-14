@@ -31,3 +31,11 @@ Events
 * pan-start
 * pan-move
 * pan-end
+* zoom-start
+* zoom-move
+* zoom-end
+* resize-start
+* resize-move
+* resize-end
+
+
