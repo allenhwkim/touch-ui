@@ -21,7 +21,6 @@ DEMO
 * [resize](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#resize)
 
 Events
-=======
 * tap / double-tap / triple-tap
 * hold / tap-and-hold / double-tap-and-hold
 * drag-start / drag-move / drag-end 
