@@ -1,13 +1,21 @@
 html, body {
   height: 100%;
 }
+
 * { 
   box-sizing: border-box
 } 
+
 body {
   background-repeat: repeat-y; 
   background-position: center; 
 }
+
+pre {
+  max-width: 100%;
+  overflow: auto;
+}
+
 div#movement-display {
   background: #ccc;
   color: #fff;
