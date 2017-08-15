@@ -46,9 +46,9 @@ class TouchUI {
     // The following won't happen because it is a singleton
     let doc = document.body;
 
-    doc.addEventListener(TouchUI.touchStart, this.touchStartHandler.bind(this), {passive: true});
-    doc.addEventListener(TouchUI.touchMove,  this.touchMoveHandler.bind(this), {passive: true});
-    doc.addEventListener(TouchUI.touchEnd,   this.touchEndHandler.bind(this), {passive: true});
+    doc.addEventListener(TouchUI.touchStart, this.touchStartHandler.bind(this), {passive: false});
+    doc.addEventListener(TouchUI.touchMove,  this.touchMoveHandler.bind(this),  {passive: true});
+    doc.addEventListener(TouchUI.touchEnd,   this.touchEndHandler.bind(this),   {passive: true});
     doc.addEventListener(TouchUI.touchLeave, this.touchResetHandler.bind(this), {passive: true});
   }
 
@@ -70,6 +70,7 @@ class TouchUI {
       clearTimeout(this.holdTimer);
     }, TouchUI.HOLD_TIME);
     this.prevTouches = this.startTouches;
+    e.preventDefault();
   }
 
   touchMoveHandler(e) {
@@ -80,7 +81,7 @@ class TouchUI {
       clearTimeout(this.tapTimer);
     }
     this.prevTouches = this.endTouches;
-    e.preventDefault();
+    // e.preventDefault();
   }
 
   touchEndHandler(e) {
@@ -196,7 +197,7 @@ TouchUI.fireTouchEvent = function (el, eventName, orgEvent, eventData) {
 
   el.dispatchEvent(customEvent);
 
-  // orgEvent.preventDefault();
+  orgEvent.preventDefault();
   return customEvent;
 };
 

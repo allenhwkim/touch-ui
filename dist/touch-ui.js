@@ -145,7 +145,7 @@ var TouchUI = function () {
       // The following won't happen because it is a singleton
       var doc = document.body;
 
-      doc.addEventListener(TouchUI.touchStart, this.touchStartHandler.bind(this), { passive: true });
+      doc.addEventListener(TouchUI.touchStart, this.touchStartHandler.bind(this), { passive: false });
       doc.addEventListener(TouchUI.touchMove, this.touchMoveHandler.bind(this), { passive: true });
       doc.addEventListener(TouchUI.touchEnd, this.touchEndHandler.bind(this), { passive: true });
       doc.addEventListener(TouchUI.touchLeave, this.touchResetHandler.bind(this), { passive: true });
@@ -170,6 +170,7 @@ var TouchUI = function () {
         clearTimeout(_this.holdTimer);
       }, TouchUI.HOLD_TIME);
       this.prevTouches = this.startTouches;
+      e.preventDefault();
     }
   }, {
     key: 'touchMoveHandler',
@@ -182,6 +183,7 @@ var TouchUI = function () {
         clearTimeout(this.tapTimer);
       }
       this.prevTouches = this.endTouches;
+      // e.preventDefault();
     }
   }, {
     key: 'touchEndHandler',
@@ -306,7 +308,7 @@ TouchUI.fireTouchEvent = function (el, eventName, orgEvent, eventData) {
 
   el.dispatchEvent(customEvent);
 
-  // orgEvent.preventDefault();
+  orgEvent.preventDefault();
   return customEvent;
 };
 
@@ -1262,10 +1264,10 @@ var TouchResize = function () {
           width = void 0,
           height = void 0,
           cursor = void 0;
-
       var positions = options.positions.split(',').map(function (p) {
         return p.trim();
       });
+
       positions.forEach(function (key) {
         overlayEl = document.createElement('div');
         overlayEl.setAttribute('resize-position', key);
