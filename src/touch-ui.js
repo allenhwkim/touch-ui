@@ -80,6 +80,7 @@ class TouchUI {
       clearTimeout(this.tapTimer);
     }
     this.prevTouches = this.endTouches;
+    e.preventDefault();
   }
 
   touchEndHandler(e) {
