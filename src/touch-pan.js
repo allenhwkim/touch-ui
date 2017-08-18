@@ -45,6 +45,7 @@ class TouchPan {
     });
 
     this.panStartAt = null;
+    this.startDistanceFromCenter = 0;
   }
 
   // when touch starts add pan-related listeners
@@ -63,11 +64,16 @@ class TouchPan {
   }
 
   panMoveHandler(e) {
-    let eventData = { move: this.touch.getMove(), lastMove: this.touch.lastMove };
+    let distanceFromCenter = TouchUI.touchDistanceFromElementCenter(e.target, e);
+    let eventData = {
+      move: this.touch.getMove(),
+      lastMove: this.touch.lastMove,
+      distanceFromCenter: distanceFromCenter - this.startDistanceFromCenter
+    };
 
     if (this.touch.firstTouchMove) { // iOS fix https://stackoverflow.com/a/26853900/454252
       e.preventDefault();
-      // this.touch.firstTouchMove = false;
+      this.touch.firstTouchMove = false;
     }
 
     if (this.panStartAt) { // if pan started
@@ -75,6 +81,7 @@ class TouchPan {
     } else {
       TouchUI.fireTouchEvent(e.target, 'pan-start', e, eventData);
       this.panStartAt = (new Date()).getTime();
+      this.startDistanceFromCenter = TouchUI.touchDistanceFromElementCenter(e.target, e);
     }
   }
 

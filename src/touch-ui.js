@@ -118,37 +118,6 @@ class TouchUI {
     return TouchUI.calcMove(this.startTouches, this.endTouches, 0); // 0: index
   }
 
-  /**
-   * moves of two finger touches.
-   * returns length and distance of two touches
-   * e.g. {
-   *   numTouches: 2,
-   *   diffTouchDistance: 10,
-   *   1: {x: 3, y: 4, distance: 5, direction: 'left'},
-   *   2: {x: 2, y: 3, distance: 4, direction: 'right'}
-   * }
-   */
-  getMoves() {
-    let staTouches = this.startTouches;
-    let endTouches = this.endTouches;
-    let moves = {};
-
-    // simulate a fake touch point for non-mobile device if defined
-    if (this.endTouches && this.startTouches) {
-      if (!this.endTouches[1] && this.simulatedTouch) {
-        this.endTouches[1] = this.simulatedTouch;
-        this.startTouches[1] = this.simulatedTouch;
-      }
-
-      if (this.endTouches.length === 2) {
-        moves.diffTouchDistance =  // distance of movement between two touches
-          TouchUI.getDistance(endTouches[0], endTouches[1]) -  // when ends
-          TouchUI.getDistance(staTouches[0], staTouches[1]);   // when starts
-        // moves.rotationDegree = TouchUI.getRotationDegree(staTouches, endTouches);
-      }
-    }
-    return moves;
-  }
 }
 
 TouchUI.isTouch = function () {
@@ -299,24 +268,18 @@ TouchUI.getOverlappingEl = function (el, candidates) {
   return ret;
 };
 
-/* Unused as of now
-TouchUI.getRotationDegree = function (start, end) {
-  let diffTouch1 = {
-    x: (start[0].clientX - start[1].clientX),
-    y: (start[0].clientY - start[1].clientY)
+TouchUI.touchDistanceFromElementCenter = function (el, touchEvent) {
+  let elBCR = el.getBoundingClientRect();
+  let center = {
+    x: window.scrollX + elBCR.left + (elBCR.width / 2),
+    y: window.scrollY + elBCR.top + (elBCR.height / 2)
   };
-  let diffTouch2 = {
-    x: (end[0].clientX - end[1].clientX),
-    y: (end[0].clientY - end[1].clientY)
+  let distance = {
+    x: touchEvent.clientX - center.x,
+    y: touchEvent.clientY - center.y
   };
 
-  var degree = Math.atan2(
-      diffTouch2.y - diffTouch1.y,
-      diffTouch2.x - diffTouch1.x
-    ) * 180 / Math.PI;
-
-  return degree;
+  return Math.sqrt(Math.pow(distance.x, 2) + Math.pow(distance.y, 2));
 };
-*/
 
 export default TouchUI;

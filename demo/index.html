@@ -227,28 +227,20 @@
     /* eslint-disable */
     let zoomTestEl = document.querySelector('#zoom-test');
     let imgEl = document.querySelector('#zoom-test img');
-    let zoomable = TouchUI.zoomable('#zoom-test');
     let moves, matches, imgScale;
 
-    zoomTestEl.addEventListener('mousedown', e => { // add the second finger for a browser
-      touch.simulatedTouch = createSimulatedTouch('#zoom-test')
-    });
-    zoomTestEl.addEventListener('mouseup', e => {   // remove the second finger
-      touch.simulatedTouch = removeSimulatedTouch('#zoom-test')
-    });
-
     imgEl.style.transform = 'scale(1)';
-    zoomTestEl.addEventListener('zoom-start', e => { // get the initial scale
+    TouchUI.pannable(zoomTestEl);
+
+    zoomTestEl.addEventListener('pan-start', e => { // get the initial scale
       matches = imgEl.style.transform.match(/scale\((.*)\)/);
       imgScale = matches ? matches[1] * 1 : 0;
     });
 
-    zoomTestEl.addEventListener('zoom-move', e => { // update scale with moving distance
-      scale = imgScale + (e.moves.diffTouchDistance/500);
-      console.log(e.moves.diffTouchDistance);
+    zoomTestEl.addEventListener('pan-move', e => { // update scale with moving distance
+      scale = imgScale + (e.distanceFromCenter/500);
       imgEl.style.transform = imgEl.style.transform.replace(/scale\((.*)\)/, (_, $1) => `scale(${scale})`);
     });
-
   </script>
 
   <h3>Code:</h3>

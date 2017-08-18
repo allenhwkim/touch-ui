@@ -3,7 +3,6 @@ import TouchDrag from './touch-drag';
 import TouchDrop from './touch-drop';
 import TouchSwipe from './touch-swipe';
 import TouchPan from './touch-pan';
-import TouchZoom from './touch-zoom';
 import TouchResize from './touch-resize';
 export {
   TouchUI,
@@ -11,7 +10,6 @@ export {
   TouchDrop,
   TouchSwipe,
   TouchPan,
-  TouchZoom,
   TouchResize
 };
 

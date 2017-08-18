@@ -19,12 +19,12 @@ import TouchUI from './touch-ui';
 
 // t.pass([message])  Passing assertion.
 // t.fail([message])  Failing assertion.
-// t.truthy(value, [message])  Assert that value is truthy.
-// t.falsy(value, [message])  Assert that value is falsy.
-// t.true(value, [message]) Assert that value is true.
-// t.false(value, [message]) Assert that value is false.
-// t.is(value, expected, [message])  Assert that value is equal to expected.
-// t.not(value, expected, [message]) Assert that value is not equal to expected.
+// t.truthy(value, [message])  Assert that value is truthy.
+// t.falsy(value, [message])  Assert that value is falsy.
+// t.true(value, [message]) Assert that value is true.
+// t.false(value, [message]) Assert that value is false.
+// t.is(value, expected, [message])  Assert that value is equal to expected.
+// t.not(value, expected, [message]) Assert that value is not equal to expected.
 
 let fireTouchEventStub, calcMoveStub;
 
@@ -112,7 +112,6 @@ test.serial('touchEndHandler()', t => {
 test('touchEndHandler', t => t.pass()); // TODO
 test.cb('touchResetHandler()', t => { t.pass(); t.end(); }); // TODO
 test('getMove()', t => t.pass()); // TODO
-test('getMoves()', t => t.pass()); // TODO
 test('TouchUI.isTouch()', t => t.pass()); // TODO
 test('TouchUI.fireTouchEvent()', t => t.pass()); // TODO
 test('TouchUI.getStyle()', t => t.pass()); // TODO

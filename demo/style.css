@@ -95,5 +95,6 @@ div[resize-position]:before{
     right:-10px;
     left:-10px;
     bottom:-10px;
-    background-color: rgba(255,0,0,0.5);
+    border: 1px dashed rgba(255,0,0,0.5);
+    border-radius: 15px;
 }
