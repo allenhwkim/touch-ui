@@ -49,7 +49,9 @@ class TouchPan {
 
   // when touch starts add pan-related listeners
   addPanListeners(e) {
-    e.target.addEventListener(TouchUI.touchMove,  this.handlers.move, {passive: true});
+    this.touch.firstTouchMove = true;
+
+    e.target.addEventListener(TouchUI.touchMove,  this.handlers.move);
     e.target.addEventListener(TouchUI.touchEnd,   this.handlers.end);
     e.target.addEventListener(TouchUI.touchLeave, this.handlers.end);
   }
@@ -62,6 +64,11 @@ class TouchPan {
 
   panMoveHandler(e) {
     let eventData = { move: this.touch.getMove(), lastMove: this.touch.lastMove };
+
+    if (this.touch.firstTouchMove) { // iOS fix https://stackoverflow.com/a/26853900/454252
+      e.preventDefault();
+      // this.touch.firstTouchMove = false;
+    }
 
     if (this.panStartAt) { // if pan started
       TouchUI.fireTouchEvent(e.target, 'pan-move', e, eventData);

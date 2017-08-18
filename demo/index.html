@@ -7,6 +7,24 @@
   <script src="../dist/touch-ui.js"></script>
   <script src="util.js"></script>
   <link rel="stylesheet" href="style.css" />
+  <script>
+  // window.onload = () => {
+  //   var firstMove;
+
+  //   window.addEventListener('touchstart', function (e) {
+  //     firstMove = true;
+  //   });
+
+  //   window.addEventListener('touchmove', function (e) {
+  //     if (firstMove) {
+  //       e.preventDefault();
+
+  //       firstMove = false;
+  //       alert(firstMove);
+  //     }
+  //   });
+  // };
+  </script>
 </head>
 <body>
   <h1> Touch UI </h1>
@@ -68,10 +86,10 @@
       <div class="draggable"> Drag Anywhere </div>
     </div>
     <div class="box">
-      <div class="draggable" style="position: absolute;left: 30%"> Drag Horizontally </div>
+      <div class="draggable" style="position: absolute;left: 20%"> Drag Horizontally </div>
     </div>
     <div class="box">
-      <div class="draggable" style="position: absolute;left: 60%"> Drag Vertically </div>
+      <div class="draggable" style="position: absolute;left: 40%"> Drag Vertically </div>
     </div>
   </div>
 
@@ -253,7 +271,7 @@
   <script id="resize-script">
     /* eslint-disable */
     let resizableEl = document.querySelector('.resizable');
-    let resize = TouchUI.resizable(resizableEl, {positions: 'right'});
+    let resizable = TouchUI.resizable(resizableEl, {positions: 'right'});
     let elRight  = document.querySelector('#resize-right');
     let elBottom = document.querySelector('#resize-bottom');
     let startWidth, startHeight;

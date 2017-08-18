@@ -48,8 +48,7 @@ class TouchDrag {
 
     this.els.forEach(el => {
       TouchUI.disableDefaultTouchBehaviour(el);
-      el.setAttribute('touch-drag', 'true');
-      el.addEventListener('hold', e => this.addDragListeners(document.body));
+      el.addEventListener('hold', e => this.addDragListeners(el));
     });
 
     this.dragStartAt = null;
@@ -57,24 +56,31 @@ class TouchDrag {
 
   // when touch starts add drag-related listeners
   addDragListeners(el) {
-    el.setAttribute('touch-drag', 'start');
-    el.addEventListener(TouchUI.touchMove,  this.dragMoveFunc);
-    el.addEventListener(TouchUI.touchEnd,   this.dragEndFunc);
-    el.addEventListener(TouchUI.touchLeave, this.dragEndFunc);
+    el.setAttribute('touch-drag', 'init');
+    document.body.addEventListener(TouchUI.touchMove,  this.dragMoveFunc);
+    document.body.addEventListener(TouchUI.touchEnd,   this.dragEndFunc);
+    document.body.addEventListener(TouchUI.touchLeave, this.dragEndFunc);
+
+    this.touch.firstTouchMove = true;
   }
 
-  removeEventListeners(el) {
-    el.removeEventListener(TouchUI.touchMove,  this.dragMoveFunc);
-    el.removeEventListener(TouchUI.touchEnd,   this.dragEndFunc);
-    el.removeEventListener(TouchUI.touchLeave, this.dragEndFunc);
-    el.setAttribute('touch-drag', 'end');
+  removeEventListeners() {
+    document.body.removeEventListener(TouchUI.touchMove,  this.dragMoveFunc);
+    document.body.removeEventListener(TouchUI.touchEnd,   this.dragEndFunc);
+    document.body.removeEventListener(TouchUI.touchLeave, this.dragEndFunc);
   }
 
   dragMoveHandler(e) {
     let prevStyle, move, dragX, dragY;
 
+    if (this.touch.firstTouchMove) {
+      e.preventDefault();
+      this.touch.firstTouchMove = false;
+    }
+
     if (this.dragStartAt) { // if drag started
       TouchUI.fireTouchEvent(this.touch.dragEl, 'drag-move', e);
+      e.target.setAttribute('touch-drag', 'move');
     } else if (e.target.getAttribute('touch-drag')) {
       this.dragStartAt = (new Date()).getTime();
       this.touch.dragEl = e.target;
@@ -110,7 +116,10 @@ class TouchDrag {
       TouchUI.fireTouchEvent(this.touch.dragEl, 'drag-end', e);
     }
 
-    this.removeEventListeners(document.body);
+    e.target.getAttribute('touch-drag') &&
+      e.target.setAttribute('touch-drag', 'end');
+
+    this.removeEventListeners();
 
     // reset drag-related variables
     this.dragStartAt = 0;

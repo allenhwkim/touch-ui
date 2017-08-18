@@ -29,8 +29,21 @@ class TouchSwipe {
   init() {
     this.els.forEach(el => {
       TouchUI.disableDefaultTouchBehaviour(el);
+      el.addEventListener(TouchUI.touchStart,  this.touchStartHandler.bind(this), {passive: true});
+      el.addEventListener(TouchUI.touchMove,  this.touchMoveHandler.bind(this), {passive: false});
       el.addEventListener(TouchUI.touchEnd,  this.touchEndHandler.bind(this), {passive: true});
     });
+  }
+
+  touchStartHandler(e) {
+    this.touch.firstTouchMove = true;
+  }
+
+  touchMoveHandler(e) {
+    if (this.touch.firstTouchMove) { // iOS fix https://stackoverflow.com/a/26853900/454252
+      e.preventDefault();
+      this.touch.firstTouchMove = false;
+    }
   }
 
   touchEndHandler(e) {

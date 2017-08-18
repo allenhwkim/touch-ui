@@ -129,6 +129,8 @@ var TouchUI = function () {
 
       this.dragEl = null; // the element that currently dragging
       this.init();
+
+      this.firstTouchMove = false;
     }
     return touchUIInstance;
   }
@@ -145,7 +147,7 @@ var TouchUI = function () {
       // The following won't happen because it is a singleton
       var doc = document.body;
 
-      doc.addEventListener(TouchUI.touchStart, this.touchStartHandler.bind(this), { passive: false });
+      doc.addEventListener(TouchUI.touchStart, this.touchStartHandler.bind(this), { passive: true });
       doc.addEventListener(TouchUI.touchMove, this.touchMoveHandler.bind(this), { passive: true });
       doc.addEventListener(TouchUI.touchEnd, this.touchEndHandler.bind(this), { passive: true });
       doc.addEventListener(TouchUI.touchLeave, this.touchResetHandler.bind(this), { passive: true });
@@ -170,7 +172,6 @@ var TouchUI = function () {
         clearTimeout(_this.holdTimer);
       }, TouchUI.HOLD_TIME);
       this.prevTouches = this.startTouches;
-      e.preventDefault();
     }
   }, {
     key: 'touchMoveHandler',
@@ -183,7 +184,6 @@ var TouchUI = function () {
         clearTimeout(this.tapTimer);
       }
       this.prevTouches = this.endTouches;
-      // e.preventDefault();
     }
   }, {
     key: 'touchEndHandler',
@@ -308,7 +308,7 @@ TouchUI.fireTouchEvent = function (el, eventName, orgEvent, eventData) {
 
   el.dispatchEvent(customEvent);
 
-  orgEvent.preventDefault();
+  // orgEvent.preventDefault();
   return customEvent;
 };
 
@@ -528,9 +528,8 @@ var TouchDrag = function () {
 
       this.els.forEach(function (el) {
         _touchUi2.default.disableDefaultTouchBehaviour(el);
-        el.setAttribute('touch-drag', 'true');
         el.addEventListener('hold', function (e) {
-          return _this.addDragListeners(document.body);
+          return _this.addDragListeners(el);
         });
       });
 
@@ -542,18 +541,19 @@ var TouchDrag = function () {
   }, {
     key: 'addDragListeners',
     value: function addDragListeners(el) {
-      el.setAttribute('touch-drag', 'start');
-      el.addEventListener(_touchUi2.default.touchMove, this.dragMoveFunc);
-      el.addEventListener(_touchUi2.default.touchEnd, this.dragEndFunc);
-      el.addEventListener(_touchUi2.default.touchLeave, this.dragEndFunc);
+      el.setAttribute('touch-drag', 'init');
+      document.body.addEventListener(_touchUi2.default.touchMove, this.dragMoveFunc);
+      document.body.addEventListener(_touchUi2.default.touchEnd, this.dragEndFunc);
+      document.body.addEventListener(_touchUi2.default.touchLeave, this.dragEndFunc);
+
+      this.touch.firstTouchMove = true;
     }
   }, {
     key: 'removeEventListeners',
-    value: function removeEventListeners(el) {
-      el.removeEventListener(_touchUi2.default.touchMove, this.dragMoveFunc);
-      el.removeEventListener(_touchUi2.default.touchEnd, this.dragEndFunc);
-      el.removeEventListener(_touchUi2.default.touchLeave, this.dragEndFunc);
-      el.setAttribute('touch-drag', 'end');
+    value: function removeEventListeners() {
+      document.body.removeEventListener(_touchUi2.default.touchMove, this.dragMoveFunc);
+      document.body.removeEventListener(_touchUi2.default.touchEnd, this.dragEndFunc);
+      document.body.removeEventListener(_touchUi2.default.touchLeave, this.dragEndFunc);
     }
   }, {
     key: 'dragMoveHandler',
@@ -563,9 +563,15 @@ var TouchDrag = function () {
           dragX = void 0,
           dragY = void 0;
 
+      if (this.touch.firstTouchMove) {
+        e.preventDefault();
+        this.touch.firstTouchMove = false;
+      }
+
       if (this.dragStartAt) {
         // if drag started
         _touchUi2.default.fireTouchEvent(this.touch.dragEl, 'drag-move', e);
+        e.target.setAttribute('touch-drag', 'move');
       } else if (e.target.getAttribute('touch-drag')) {
         this.dragStartAt = new Date().getTime();
         this.touch.dragEl = e.target;
@@ -602,7 +608,9 @@ var TouchDrag = function () {
         _touchUi2.default.fireTouchEvent(this.touch.dragEl, 'drag-end', e);
       }
 
-      this.removeEventListeners(document.body);
+      e.target.getAttribute('touch-drag') && e.target.setAttribute('touch-drag', 'end');
+
+      this.removeEventListeners();
 
       // reset drag-related variables
       this.dragStartAt = 0;
@@ -848,8 +856,24 @@ var TouchSwipe = function () {
 
       this.els.forEach(function (el) {
         _touchUi2.default.disableDefaultTouchBehaviour(el);
+        el.addEventListener(_touchUi2.default.touchStart, _this.touchStartHandler.bind(_this), { passive: true });
+        el.addEventListener(_touchUi2.default.touchMove, _this.touchMoveHandler.bind(_this), { passive: false });
         el.addEventListener(_touchUi2.default.touchEnd, _this.touchEndHandler.bind(_this), { passive: true });
       });
+    }
+  }, {
+    key: 'touchStartHandler',
+    value: function touchStartHandler(e) {
+      this.touch.firstTouchMove = true;
+    }
+  }, {
+    key: 'touchMoveHandler',
+    value: function touchMoveHandler(e) {
+      if (this.touch.firstTouchMove) {
+        // iOS fix https://stackoverflow.com/a/26853900/454252
+        e.preventDefault();
+        this.touch.firstTouchMove = false;
+      }
     }
   }, {
     key: 'touchEndHandler',
@@ -962,7 +986,9 @@ var TouchPan = function () {
   }, {
     key: 'addPanListeners',
     value: function addPanListeners(e) {
-      e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move, { passive: true });
+      this.touch.firstTouchMove = true;
+
+      e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move);
       e.target.addEventListener(_touchUi2.default.touchEnd, this.handlers.end);
       e.target.addEventListener(_touchUi2.default.touchLeave, this.handlers.end);
     }
@@ -977,6 +1003,12 @@ var TouchPan = function () {
     key: 'panMoveHandler',
     value: function panMoveHandler(e) {
       var eventData = { move: this.touch.getMove(), lastMove: this.touch.lastMove };
+
+      if (this.touch.firstTouchMove) {
+        // iOS fix https://stackoverflow.com/a/26853900/454252
+        e.preventDefault();
+        // this.touch.firstTouchMove = false;
+      }
 
       if (this.panStartAt) {
         // if pan started
@@ -1087,7 +1119,8 @@ var TouchZoom = function () {
   }, {
     key: 'addZoomListeners',
     value: function addZoomListeners(e) {
-      console.log(1111111111111, e.target);
+      this.touch.firstTouchMove = true;
+
       e.target.addEventListener(_touchUi2.default.touchMove, this.handlers.move, { passive: true });
       e.target.addEventListener(_touchUi2.default.touchEnd, this.handlers.end);
       e.target.addEventListener(_touchUi2.default.touchLeave, this.handlers.end);
@@ -1103,6 +1136,11 @@ var TouchZoom = function () {
     key: 'zoomMoveHandler',
     value: function zoomMoveHandler(e) {
       var moves = this.touch.getMoves();
+
+      if (this.touch.firstTouchMove) {
+        this.touch.firstTouchMove = false;
+        e.preventDefault();
+      }
 
       if (!this.zoomStartAt && Math.abs(moves.diffTouchDistance) > 20) {
         _touchUi2.default.fireTouchEvent(e.target, 'zoom-start', e, { moves: moves });
@@ -1188,9 +1226,8 @@ var TouchResize = function () {
     this.els = _ref[0];
     this.options = _ref[1];
 
-    console.log('TouchResize', 'this.els', this.els, 'this.options', this.options);
 
-    window.addEventListener('load', this.init.bind(this));
+    window.addEventListener('load', this.init.bind(this)); // positioning div should happen after all DOM is loaded
   }
 
   _createClass(TouchResize, [{
@@ -1216,6 +1253,7 @@ var TouchResize = function () {
       var resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
       var resizePosition = e.target.getAttribute('resize-direction');
 
+      this.touch.firstTouchMove = true;
       this.startWidth = resizeElBCR.width;
       this.startHeight = resizeElBCR.height;
 
@@ -1227,6 +1265,11 @@ var TouchResize = function () {
       var resizeEl = e.resizeFor;
       var resizePosition = e.target.getAttribute('resize-position');
       var move = this.touch.getMove();
+
+      if (this.touch.firstTouchMove) {
+        e.preventDefault();
+        this.touch.firstTouchMove = false;
+      }
 
       if (resizePosition === 'right') {
         resizeEl.style.width = this.startWidth + move.x + 'px';

@@ -46,7 +46,8 @@ class TouchZoom {
 
   // when touch starts add zoom-related listeners
   addZoomListeners(e) {
-    console.log(1111111111111, e.target);
+    this.touch.firstTouchMove = true;
+
     e.target.addEventListener(TouchUI.touchMove,  this.handlers.move, {passive: true});
     e.target.addEventListener(TouchUI.touchEnd,   this.handlers.end);
     e.target.addEventListener(TouchUI.touchLeave, this.handlers.end);
@@ -60,6 +61,11 @@ class TouchZoom {
 
   zoomMoveHandler(e) {
     let moves = this.touch.getMoves();
+
+    if (this.touch.firstTouchMove) {
+      this.touch.firstTouchMove = false;
+      e.preventDefault();
+    }
 
     if (!this.zoomStartAt && Math.abs(moves.diffTouchDistance) > 20) {
       TouchUI.fireTouchEvent(e.target, 'zoom-start', e, {moves: moves});

@@ -40,12 +40,12 @@ div#movement-display {
 
 /* drag related */
 #drag-test .box {
-  height: 50px;
+  height: 60px;
   margin: 10px 0;
 }
 .draggable {
-  width: 33%;
-  height: 50px;
+  width: 50%;
+  height: 60px;
   background: #ccc;
   color: #fff; 
   margin: 10px;
@@ -85,4 +85,15 @@ div#movement-display {
   max-height: 100%;
   margin: auto;
   display: block;
+}
+
+/* resize related */
+div[resize-position]:before{
+    position:absolute;
+    content:'';
+    top:-10px;
+    right:-10px;
+    left:-10px;
+    bottom:-10px;
+    background-color: rgba(255,0,0,0.5);
 }

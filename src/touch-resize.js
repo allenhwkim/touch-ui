@@ -27,9 +27,8 @@ class TouchResize {
     let args = TouchUI.parseArguments([...arguments], defaultOptions);
 
     [this.els, this.options] = [args.elements, args.options];
-    console.log('TouchResize', 'this.els', this.els, 'this.options', this.options);
 
-    window.addEventListener('load', this.init.bind(this));
+    window.addEventListener('load', this.init.bind(this));  // positioning div should happen after all DOM is loaded
   }
 
   init() {
@@ -50,6 +49,7 @@ class TouchResize {
     let resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
     let resizePosition = e.target.getAttribute('resize-direction');
 
+    this.touch.firstTouchMove = true;
     this.startWidth = resizeElBCR.width;
     this.startHeight = resizeElBCR.height;
 
@@ -60,6 +60,11 @@ class TouchResize {
     let resizeEl = e.resizeFor;
     let resizePosition = e.target.getAttribute('resize-position');
     let move = this.touch.getMove();
+
+    if (this.touch.firstTouchMove) {
+      e.preventDefault();
+      this.touch.firstTouchMove = false;
+    }
 
     if (resizePosition === 'right') {
       resizeEl.style.width  = this.startWidth + move.x + 'px';
@@ -108,16 +113,21 @@ class TouchResize {
       let key = overlayEl.getAttribute('resize-position');
 
       // set style including position
-      top    = key === 'bottom' ? window.scrollY + resizeElBCR.bottom - 2 :
-               key === 'right' ?  window.scrollY + resizeElBCR.top + 1 : 0;
-      left   = key === 'bottom' ? window.scrollX + resizeElBCR.left - 1 :
-               key === 'right' ?  window.scrollX + resizeElBCR.right - 2 : 0;
-      width  = key === 'bottom' ? resizeElBCR.width - 2 :
-               key === 'right' ?  3 : 0;
-      height = key === 'bottom' ? 3 :
-               key === 'right' ?  resizeElBCR.height - 2 : 0;
-      cursor = key === 'bottom' ? 'ns-resize' :
-               key === 'right' ?  'ew-resize' : 0;
+      top    =
+        key === 'bottom' ? window.scrollY + resizeElBCR.bottom - 2 :
+        key === 'right' ?  window.scrollY + resizeElBCR.top + 1 : 0;
+      left   =
+        key === 'bottom' ? window.scrollX + resizeElBCR.left - 1 :
+        key === 'right' ?  window.scrollX + resizeElBCR.right - 2 : 0;
+      width  =
+        key === 'bottom' ? resizeElBCR.width - 2 :
+        key === 'right' ?  3 : 0;
+      height =
+        key === 'bottom' ? 3 :
+        key === 'right' ?  resizeElBCR.height - 2 : 0;
+      cursor =
+        key === 'bottom' ? 'ns-resize' :
+        key === 'right' ?  'ew-resize' : 0;
 
       overlayEl.style.position = 'absolute';
       overlayEl.style.top = top + 'px';
@@ -135,8 +145,9 @@ class TouchResize {
 
     // add event listeners
     resizePosition = overlayEl.getAttribute('resize-position');
-    dragAxis = resizePosition === 'right' ? 'x' :
-               resizePosition === 'bottom' ? 'y' : 'xy';
+    dragAxis =
+      resizePosition === 'right' ? 'x' :
+      resizePosition === 'bottom' ? 'y' : 'xy';
     touchDrag = new TouchDrag(overlayEl, {axis: dragAxis, recoverWhenEnd: false});
 
     overlayEl.addEventListener('hold', e => {
