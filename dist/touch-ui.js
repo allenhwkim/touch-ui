@@ -257,15 +257,10 @@ TouchUI.fireTouchEvent = function (el, eventName, orgEvent, eventData) {
   }
 
   customEvent.eventName = eventName;
-  if (orgEvent.clientX) {
-    customEvent.button = orgEvent.button;
-    customEvent.which = orgEvent.which;
-    customEvent.clientX = orgEvent.clientX;
-    customEvent.clientY = orgEvent.clientY;
-    customEvent.pageX = orgEvent.pageX;
-    customEvent.pageY = orgEvent.pageY;
-    customEvent.screenX = orgEvent.screenX;
-    customEvent.screenY = orgEvent.screenY;
+  if (orgEvent.clientX || orgEvent.pageX) {
+    ['button', 'which', 'clientX', 'clientY', 'pageX', 'pageY', 'screenX', 'screenY', 'altKey', 'ctrlKey', 'metaKey', 'shiftKey'].forEach(function (key) {
+      return customEvent[key] = orgEvent[key];
+    });
   }
   orgEvent.touches && (customEvent.touches = orgEvent.touches);
   orgEvent.changedTouches && (customEvent.changedTouches = orgEvent.changedTouches);
@@ -395,10 +390,12 @@ TouchUI.getOverlappingEl = function (el, candidates) {
 
 TouchUI.touchDistanceFromElementCenter = function (el, touchEvent) {
   var elBCR = el.getBoundingClientRect();
+
   var center = {
     x: window.scrollX + elBCR.left + elBCR.width / 2,
     y: window.scrollY + elBCR.top + elBCR.height / 2
   };
+
   var distance = {
     x: touchEvent.clientX - center.x,
     y: touchEvent.clientY - center.y
@@ -924,8 +921,6 @@ var TouchPan = function () {
       var _this = this;
 
       this.touch = new _touchUi2.default(); // sets basic touch events by watching start, move, and end
-      this.panMoveFunc = this.handlers.move;
-      this.panEndFunc = this.handlers.end;
 
       this.els.forEach(function (el) {
         _touchUi2.default.disableDefaultTouchBehaviour(el);
@@ -957,7 +952,8 @@ var TouchPan = function () {
   }, {
     key: 'panMoveHandler',
     value: function panMoveHandler(e) {
-      var distanceFromCenter = _touchUi2.default.touchDistanceFromElementCenter(e.target, e);
+      var touchEvent = e.changedTouches ? e.changedTouches[0] : e;
+      var distanceFromCenter = _touchUi2.default.touchDistanceFromElementCenter(e.target, touchEvent);
       var eventData = {
         move: this.touch.getMove(),
         lastMove: this.touch.lastMove,
@@ -976,7 +972,7 @@ var TouchPan = function () {
       } else {
         _touchUi2.default.fireTouchEvent(e.target, 'pan-start', e, eventData);
         this.panStartAt = new Date().getTime();
-        this.startDistanceFromCenter = _touchUi2.default.touchDistanceFromElementCenter(e.target, e);
+        this.startDistanceFromCenter = distanceFromCenter;
       }
     }
   }, {

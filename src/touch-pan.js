@@ -36,8 +36,6 @@ class TouchPan {
 
   init() {
     this.touch = new TouchUI(); // sets basic touch events by watching start, move, and end
-    this.panMoveFunc = this.handlers.move;
-    this.panEndFunc  = this.handlers.end;
 
     this.els.forEach(el => {
       TouchUI.disableDefaultTouchBehaviour(el);
@@ -64,7 +62,8 @@ class TouchPan {
   }
 
   panMoveHandler(e) {
-    let distanceFromCenter = TouchUI.touchDistanceFromElementCenter(e.target, e);
+    let touchEvent = e.changedTouches ? e.changedTouches[0] : e;
+    let distanceFromCenter = TouchUI.touchDistanceFromElementCenter(e.target, touchEvent);
     let eventData = {
       move: this.touch.getMove(),
       lastMove: this.touch.lastMove,
@@ -81,7 +80,7 @@ class TouchPan {
     } else {
       TouchUI.fireTouchEvent(e.target, 'pan-start', e, eventData);
       this.panStartAt = (new Date()).getTime();
-      this.startDistanceFromCenter = TouchUI.touchDistanceFromElementCenter(e.target, e);
+      this.startDistanceFromCenter = distanceFromCenter;
     }
   }
 

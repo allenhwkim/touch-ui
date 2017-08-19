@@ -150,15 +150,11 @@ TouchUI.fireTouchEvent = function (el, eventName, orgEvent, eventData) {
   }
 
   customEvent.eventName = eventName;
-  if (orgEvent.clientX) {
-    customEvent.button  = orgEvent.button;
-    customEvent.which   = orgEvent.which;
-    customEvent.clientX = orgEvent.clientX;
-    customEvent.clientY = orgEvent.clientY;
-    customEvent.pageX   = orgEvent.pageX;
-    customEvent.pageY   = orgEvent.pageY;
-    customEvent.screenX = orgEvent.screenX;
-    customEvent.screenY = orgEvent.screenY;
+  if (orgEvent.clientX || orgEvent.pageX) {
+    [
+      'button', 'which', 'clientX', 'clientY', 'pageX', 'pageY',
+      'screenX', 'screenY', 'altKey', 'ctrlKey', 'metaKey', 'shiftKey'
+    ].forEach(key => (customEvent[key] = orgEvent[key]));
   }
   orgEvent.touches && (customEvent.touches = orgEvent.touches);
   orgEvent.changedTouches && (customEvent.changedTouches = orgEvent.changedTouches);
@@ -270,12 +266,14 @@ TouchUI.getOverlappingEl = function (el, candidates) {
 
 TouchUI.touchDistanceFromElementCenter = function (el, touchEvent) {
   let elBCR = el.getBoundingClientRect();
+
   let center = {
     x: window.scrollX + elBCR.left + (elBCR.width / 2),
     y: window.scrollY + elBCR.top + (elBCR.height / 2)
   };
+
   let distance = {
-    x: touchEvent.clientX - center.x,
+    x: touchEvent.clientX  - center.x,
     y: touchEvent.clientY - center.y
   };
 

@@ -182,70 +182,43 @@
   <script>showScript('#swipe-code', '#swipe-script')</script>
  
   <!-- ................................................................................................ -->
-  <!--                                           Pan Test                                               -->
+  <!--                                           Pan / Zoom                                             -->
   <!-- ................................................................................................ -->
-  <h2 id="pan"> Pan </h2>
-  <div id="pan-test" class="touch-box" style="background:url(http://lorempixel.com/1024/768/nature/)">
-  </div>
-  <div class="instruction">
-    Pan around on the box left
+  <h2 id="pan"> Pan / Zoom </h2>
+  <input type="checkbox" id="do-zoom" /> Press Ctrl(Command) key to zoom 
+  <div id="pan-test" class="touch-box" style="
+    background-image: url('http://lorempixel.com/1536/600/nature/');
+    background-repeat: no-repeat;
+    background-position: center;">
   </div>
 
   <script id="pan-script">
     /* eslint-disable */
     let panTestEl = document.querySelector('#pan-test');
+    let doZoomEl = document.querySelector('#do-zoom');
+    let moves, style, matches, bgStartSize, bgSize;
     TouchUI.pannable(panTestEl);
 
-    let x, y, startX, startY;
-    panTestEl.addEventListener('pan-start', e => {
-     x = panTestEl.style.backgroundPositionX;
-     startX = Number.isNaN(parseInt(x)) ? 0 : parseInt(x);
-     y = panTestEl.style.backgroundPositionY;
-     startY = Number.isNaN(parseInt(y)) ? 0 : parseInt(y);
+    panTestEl.addEventListener('pan-start', e => { // get the initial scale
+      style = window.getComputedStyle(e.target, null);
+      startX = parseInt(style.backgroundPositionX) || 0;
+      startY = parseInt(style.backgroundPositionY) || 0;
+      bgStartSize = parseInt(style.backgroundSize) || 100;
     });
 
-    panTestEl.addEventListener('pan-move', e => {
-      panTestEl.style.backgroundPositionX = startX + e.move.x + 'px';
-      panTestEl.style.backgroundPositionY = startY + e.move.y + 'px';
-      panTestEl.innerHTML = `${e.eventName} ${e.move ? e.move.direction :''}`;
+    panTestEl.addEventListener('pan-move', e => { // update scale with moving distance
+      if (e.metaKey || e.ctrlKey || doZoomEl.checked) {
+        e.target.style.backgroundSize = bgStartSize + (e.distanceFromCenter/2) + '%';
+      } else {
+        panTestEl.style.backgroundPositionX = startX + e.move.x + 'px';
+        panTestEl.style.backgroundPositionY = startY + e.move.y + 'px';
+      }
     });
   </script>
 
   <h3>Code:</h3>
   <pre id="pan-code"></pre>
   <script>showScript('#pan-code', '#pan-script')</script>
-
-  <!-- ................................................................................................ -->
-  <!--                                           Zoom In/Out Test                                       -->
-  <!-- ................................................................................................ -->
-  <h2 id="zoom"> Zoom in/out </h2>
-  <div id="zoom-test" class="touch-box" style="overflow: hidden">
-    <img src="http://lorempixel.com/1536/600/nature/" style="pointer-events: none; user-select: none"/>
-  </div>
-
-  <script id="zoom-script">
-    /* eslint-disable */
-    let zoomTestEl = document.querySelector('#zoom-test');
-    let imgEl = document.querySelector('#zoom-test img');
-    let moves, matches, imgScale;
-
-    imgEl.style.transform = 'scale(1)';
-    TouchUI.pannable(zoomTestEl);
-
-    zoomTestEl.addEventListener('pan-start', e => { // get the initial scale
-      matches = imgEl.style.transform.match(/scale\((.*)\)/);
-      imgScale = matches ? matches[1] * 1 : 0;
-    });
-
-    zoomTestEl.addEventListener('pan-move', e => { // update scale with moving distance
-      scale = imgScale + (e.distanceFromCenter/500);
-      imgEl.style.transform = imgEl.style.transform.replace(/scale\((.*)\)/, (_, $1) => `scale(${scale})`);
-    });
-  </script>
-
-  <h3>Code:</h3>
-  <pre id="zoom-code"></pre>
-  <script>showScript('#zoom-code', '#zoom-script')</script>
 
   <!-- ................................................................................................ -->
   <!--                                          Resize Test                                       -->
@@ -259,6 +232,7 @@
       When resize, width of this changes
     </div>
   </div>
+  The border around it is to increase touch sensitivity by adding :before pseudo element.
 
   <script id="resize-script">
     /* eslint-disable */

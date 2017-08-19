@@ -77,9 +77,6 @@ div#movement-display {
 }
 
 /* zoom` related */
-#zoom-test {
-  height: auto;
-}
 #zoom-test img {
   max-width: 100%;
   max-height: 100%;
