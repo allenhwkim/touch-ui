@@ -12,15 +12,22 @@ Tested with
 
 DEMO
 ====
-* [tap/hold](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#tap-hold)
-* [drag](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#drag)
-* [drop](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#drop)
-* [swipe](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#swipe)
-* [pan](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#pan)
-* [zoom](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#pan)
-* [resize](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#resize)
+<a href="https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#tap-hold">
+  <img width="30%" align="top" src="https://user-images.githubusercontent.com/1437734/29497247-e940aee2-85b2-11e7-86c1-a41fac237a5e.png"><a>
+<a href="https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#drag">
+  <img width="30%" align="top" src="https://user-images.githubusercontent.com/1437734/29497437-83b44a04-85b5-11e7-9198-99d96bddbca7.png"><a>
+<a href="https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#drop">
+  <img width="30%" align="top" src="https://user-images.githubusercontent.com/1437734/29497450-b1e8aa8c-85b5-11e7-9348-47b0369564a6.png"><a>
+<a href="https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#swipe">
+  <img width="30%" align="top" src="https://user-images.githubusercontent.com/1437734/29497453-e31536ca-85b5-11e7-943f-d8b36500a55e.png"><a>
+<a href="https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#pan">
+  <img width="30%" align="top" src="https://user-images.githubusercontent.com/1437734/29497475-57e79f92-85b6-11e7-8459-0ff854481f13.png"><a>
+<a href="https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#resize">
+  <img width="30%" align="top" src="https://user-images.githubusercontent.com/1437734/29497488-8bfab440-85b6-11e7-8c8a-38cc9d1d9d45.png"><a>
 
-Events
+Supported Events  
+e.g. `el.addEventListener('drag-move', e => console.log(e));`
+
 * tap / double-tap / triple-tap
 * hold / tap-and-hold / double-tap-and-hold
 * drag-start / drag-move / drag-end 
