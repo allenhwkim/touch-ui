@@ -17,7 +17,7 @@ DEMO
 * [drop](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#drop)
 * [swipe](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#swipe)
 * [pan](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#pan)
-* [zoom](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#zoom)
+* [zoom](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#pan)
 * [resize](https://rawgit.com/allenhwkim/touch-ui/master/demo/index.html#resize)
 
 Events
@@ -27,8 +27,25 @@ Events
 * drag-enter / drag-leave / drop
 * swipe-left / swipe-right / swipe-up / swipe-down
 * pan-start / pan-move / pan-end
-* zoom-start / zoom-move / zoom-end
 * resize-start / resize-move / resize-end
+
+## Overview
+. Almost all touch events fires start, move, and end event.
+. It does not deal with multi-touch events. e.g. two finger zoom, two finger swipe, etc.
+. It fires a Javascript event, so that you can add event listener like a vanilla Javascript.
+  This is unlike other touch library, which you have to learn their own way to use their own callbacks.
+  `myEl.addEventListener('drag-move', functione(e) {console.log(e)})`
+
+
+## Usage
+
+Include script tag into your html
+
+      <div class="draggable">Drag This</div>
+      <script src="https://unpkg.com/touch-ui/dist/touch-ui.min.js"></script>
+      <script>
+        TouchUI.draggable('.draggable', {axis: 'xy'});
+      </script>
 
 ## Install
 
@@ -41,16 +58,7 @@ Events
         import TouchUI from './touch-ui';
         TouchUI.draggable(dragEls[0], {axis: 'xy'});
 
-## Use Without Install
-
-Include script tag into your html
-
-      <script src="https://unpkg.com/touch-ui/dist/touch-ui.min.js"></script>
-      <script>
-        TouchUI.draggable(dragEls[0], {axis: 'xy'});
-      </script>
-
-## Usage
+## Examples
 
 
 ### Tap and hold example
@@ -93,24 +101,6 @@ Include script tag into your html
     panTestEl.addEventListener('pan-start', e => console.log(e) );
     panTestEl.addEventListener('pan-move', e => console.log(e) );
   
-### Zoom example
-
-    let zoomTestEl = document.querySelector('#zoom-test');
-    let imgEl = document.querySelector('#zoom-test img');
-    let zoomable = TouchUI.zoomable('#zoom-test');
-    let moves, matches, imgScale;
-
-    imgEl.style.transform = 'scale(1)';
-    zoomTestEl.addEventListener('zoom-start', e => { // get the initial scale
-      matches = imgEl.style.transform.match(/scale\((.*)\)/);
-      imgScale = matches ? matches[1] * 1 : 0;
-    });
-
-    zoomTestEl.addEventListener('zoom-move', e => { // update scale with moving distance
-      scale = imgScale + (e.moves.diffTouchDistance/500);
-      imgEl.style.transform = imgEl.style.transform.replace(/scale\((.*)\)/, (_, $1) => `scale(${scale})`);
-    });
-
 ### Resize example
 
     let resizableEl = document.querySelector('.resizable');
