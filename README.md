@@ -30,12 +30,13 @@ Events
 * resize-start / resize-move / resize-end
 
 ## Overview
-. Almost all touch events fires start, move, and end event.
-. It does not deal with multi-touch events. e.g. two finger zoom, two finger swipe, etc.
-. It fires a Javascript event, so that you can add event listener like a vanilla Javascript.
-  This is unlike other touch library, which you have to learn their own way to use their own callbacks.
-  `myEl.addEventListener('drag-move', functione(e) {console.log(e)})`
 
+  * This library is very focused on simplicity and design
+  * All events works for desktop browsers, of course, as well as mobile browsers.
+  * For simplicity, it does not deal with multi-touch events. e.g. two finger zoom, two finger swipe, etc. The reason is that each mobile browser has its own way of dealing with multi-touch events and this library does not make another hacks on the top of the default behaviour, which makes less maintainable and more complicated.
+  * It fires a Javascript event without using any callbacks, so that you can add event listener like a vanilla Javascript.
+    This is unlike other touch library, which you have to learn their own way to use their own callbacks.
+    `myEl.addEventListener('drag-move', functione(e) {console.log(e)})`
 
 ## Usage
 
