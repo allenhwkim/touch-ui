@@ -28,13 +28,13 @@ DEMO
 Supported Events  
 e.g. `el.addEventListener('drag-move', e => console.log(e));`
 
-* tap / double-tap / triple-tap
-* hold / tap-and-hold / double-tap-and-hold
-* drag-start / drag-move / drag-end 
-* drag-enter / drag-leave / drop
-* swipe-left / swipe-right / swipe-up / swipe-down
-* pan-start / pan-move / pan-end
-* resize-start / resize-move / resize-end
+* `tap` / `double-tap` / `triple-tap`
+* `hold` / `tap-and-hold` / `double-tap-and-hold`
+* `drag-start` / `drag-move` / `drag-end` 
+* `drag-enter` / `drag-leave` / `drop`
+* `swipe-left` / `swipe-right` / `swipe-up` / `swipe-down`
+* `pan-start` / `pan-move` / `pan-end`
+* `resize-start` / `resize-move` / `resize-end`
 
 ## Overview
 
