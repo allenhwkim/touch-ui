@@ -3,7 +3,8 @@ Touch-UI
 Fire cross-browser-convenient touch events
 
 [![Build Status](https://travis-ci.org/allenhwkim/touch-ui.svg?branch=master)](https://travis-ci.org/allenhwkim/touch-ui)
-[![Join the chat at https://gitter.im/allenhwkim/touch-ui](https://badges.gitter.im/allenhwkim/touch-ui.svg)]
+[![Join the chat at https://gitter.im/allenhwkim/touch-ui](https://badges.gitter.im/allenhwkim/touch-ui.svg)](https://gitter.im/allenhwkim/touch-ui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 
 Tested with
 <img src="https://ci.testling.com/_/images/chrome.png" width=32 />
