@@ -22,13 +22,20 @@ class TouchResize {
     this.startWidth;
     this.startHeight;
     this.overlayEls = [];
+    this.handlers = {
+      end: this.resizeEndHandler.bind(this)
+    };
 
     let defaultOptions = {positions: 'right, bottom'};
     let args = TouchUI.parseArguments([...arguments], defaultOptions);
 
     [this.els, this.options] = [args.elements, args.options];
 
-    window.addEventListener('load', this.init.bind(this));  // positioning div should happen after all DOM is loaded
+    if (document.readyState === 'complete') {
+      this.init();
+    } else { // window.onload does not fire after window.onload is already fired.
+      window.addEventListener('load', this.init.bind(this)); // positioning div should happen after all DOM is loaded
+    }
   }
 
   init() {
@@ -42,6 +49,14 @@ class TouchResize {
     });
 
     this.dragStartAt = null;
+  }
+
+  reset(options) {
+    this.options = Object.assign(this.options, options);
+    this.overlayEls.forEach(el => el.remove());
+    this.overlayEls = [];
+    document.removeEventListener(TouchUI.touchEnd, this.handlers.end);
+    this.init();
   }
 
   resizeStartHandler(e) {
@@ -83,11 +98,17 @@ class TouchResize {
     let move = this.touch.getMove();
     let resizePosition = e.target.getAttribute('resize-position');
 
-    this.styleOverlayEls(e.resizeFor, this.overlayEls);
-    TouchUI.fireTouchEvent(e.resizeFor, 'resize-end', e, {
-      move: move,
-      resizePosition: resizePosition
+    this.overlayEls.forEach(overlayEl => {
+      overlayEl.style.boxShadow = '';
     });
+
+    if (e.resizeFor) {
+      this.styleOverlayEls(e.resizeFor, this.overlayEls);
+      TouchUI.fireTouchEvent(e.resizeFor, 'resize-end', e, {
+        move: move,
+        resizePosition: resizePosition
+      });
+    }
   }
 
   createResizeOverlays(options) {
@@ -121,9 +142,9 @@ class TouchResize {
         key === 'right' ?  window.scrollX + resizeElBCR.right - 2 : 0;
       width  =
         key === 'bottom' ? resizeElBCR.width - 2 :
-        key === 'right' ?  3 : 0;
+        key === 'right' ?  10 : 0;
       height =
-        key === 'bottom' ? 3 :
+        key === 'bottom' ? 10 :
         key === 'right' ?  resizeElBCR.height - 2 : 0;
       cursor =
         key === 'bottom' ? 'ns-resize' :
@@ -154,9 +175,7 @@ class TouchResize {
       e.target.style.boxShadow = '0px 0px 2px 2px rgba(255,255,0,1)';
     });
 
-    overlayEl.addEventListener(TouchUI.touchEnd, e => {
-      e.target.style.boxShadow = '';
-    });
+    document.addEventListener(TouchUI.touchEnd, this.handlers.end);
 
     overlayEl.addEventListener('drag-start', e => {
       e.resizeFor = resizeForEl;

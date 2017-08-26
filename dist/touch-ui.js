@@ -1044,6 +1044,9 @@ var TouchResize = function () {
     this.startWidth;
     this.startHeight;
     this.overlayEls = [];
+    this.handlers = {
+      end: this.resizeEndHandler.bind(this)
+    };
 
     var defaultOptions = { positions: 'right, bottom' };
     var args = _touchUi2.default.parseArguments([].concat(Array.prototype.slice.call(arguments)), defaultOptions);
@@ -1053,7 +1056,12 @@ var TouchResize = function () {
     this.options = _ref[1];
 
 
-    window.addEventListener('load', this.init.bind(this)); // positioning div should happen after all DOM is loaded
+    if (document.readyState === 'complete') {
+      this.init();
+    } else {
+      // window.onload does not fire after window.onload is already fired.
+      window.addEventListener('load', this.init.bind(this)); // positioning div should happen after all DOM is loaded
+    }
   }
 
   _createClass(TouchResize, [{
@@ -1071,6 +1079,17 @@ var TouchResize = function () {
       });
 
       this.dragStartAt = null;
+    }
+  }, {
+    key: 'reset',
+    value: function reset(options) {
+      this.options = Object.assign(this.options, options);
+      this.overlayEls.forEach(function (el) {
+        return el.remove();
+      });
+      this.overlayEls = [];
+      document.removeEventListener(_touchUi2.default.touchEnd, this.handlers.end);
+      this.init();
     }
   }, {
     key: 'resizeStartHandler',
@@ -1115,11 +1134,17 @@ var TouchResize = function () {
       var move = this.touch.getMove();
       var resizePosition = e.target.getAttribute('resize-position');
 
-      this.styleOverlayEls(e.resizeFor, this.overlayEls);
-      _touchUi2.default.fireTouchEvent(e.resizeFor, 'resize-end', e, {
-        move: move,
-        resizePosition: resizePosition
+      this.overlayEls.forEach(function (overlayEl) {
+        overlayEl.style.boxShadow = '';
       });
+
+      if (e.resizeFor) {
+        this.styleOverlayEls(e.resizeFor, this.overlayEls);
+        _touchUi2.default.fireTouchEvent(e.resizeFor, 'resize-end', e, {
+          move: move,
+          resizePosition: resizePosition
+        });
+      }
     }
   }, {
     key: 'createResizeOverlays',
@@ -1161,8 +1186,8 @@ var TouchResize = function () {
         // set style including position
         top = key === 'bottom' ? window.scrollY + resizeElBCR.bottom - 2 : key === 'right' ? window.scrollY + resizeElBCR.top + 1 : 0;
         left = key === 'bottom' ? window.scrollX + resizeElBCR.left - 1 : key === 'right' ? window.scrollX + resizeElBCR.right - 2 : 0;
-        width = key === 'bottom' ? resizeElBCR.width - 2 : key === 'right' ? 3 : 0;
-        height = key === 'bottom' ? 3 : key === 'right' ? resizeElBCR.height - 2 : 0;
+        width = key === 'bottom' ? resizeElBCR.width - 2 : key === 'right' ? 10 : 0;
+        height = key === 'bottom' ? 10 : key === 'right' ? resizeElBCR.height - 2 : 0;
         cursor = key === 'bottom' ? 'ns-resize' : key === 'right' ? 'ew-resize' : 0;
 
         overlayEl.style.position = 'absolute';
@@ -1193,9 +1218,7 @@ var TouchResize = function () {
         e.target.style.boxShadow = '0px 0px 2px 2px rgba(255,255,0,1)';
       });
 
-      overlayEl.addEventListener(_touchUi2.default.touchEnd, function (e) {
-        e.target.style.boxShadow = '';
-      });
+      document.addEventListener(_touchUi2.default.touchEnd, this.handlers.end);
 
       overlayEl.addEventListener('drag-start', function (e) {
         e.resizeFor = resizeForEl;
