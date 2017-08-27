@@ -1184,10 +1184,10 @@ var TouchResize = function () {
         var key = overlayEl.getAttribute('resize-position');
 
         // set style including position
-        top = key === 'bottom' ? window.scrollY + resizeElBCR.bottom - 2 : key === 'right' ? window.scrollY + resizeElBCR.top + 1 : 0;
-        left = key === 'bottom' ? window.scrollX + resizeElBCR.left - 1 : key === 'right' ? window.scrollX + resizeElBCR.right - 2 : 0;
-        width = key === 'bottom' ? resizeElBCR.width - 2 : key === 'right' ? 10 : 0;
-        height = key === 'bottom' ? 10 : key === 'right' ? resizeElBCR.height - 2 : 0;
+        top = key === 'bottom' ? window.scrollY + resizeElBCR.bottom - 12 : key === 'right' ? window.scrollY + resizeElBCR.top + 1 : 0;
+        left = key === 'bottom' ? window.scrollX + resizeElBCR.left - 1 : key === 'right' ? window.scrollX + resizeElBCR.right - 12 : 0;
+        width = key === 'bottom' ? resizeElBCR.width - 2 : key === 'right' ? 20 : 0;
+        height = key === 'bottom' ? 20 : key === 'right' ? resizeElBCR.height - 2 : 0;
         cursor = key === 'bottom' ? 'ns-resize' : key === 'right' ? 'ew-resize' : 0;
 
         overlayEl.style.position = 'absolute';
