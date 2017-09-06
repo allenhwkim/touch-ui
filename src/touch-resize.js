@@ -21,7 +21,7 @@ class TouchResize {
     this.touch = new TouchUI();
     this.startWidth;
     this.startHeight;
-    this.overlayEls = [];
+    this.draggingEls = [];
     this.handlers = {
       end: this.resizeEndHandler.bind(this)
     };
@@ -39,12 +39,12 @@ class TouchResize {
   }
 
   init() {
-    this.els.forEach(resizeEl => {
-      this.overlayEls = this.createResizeOverlays(this.options);
-      this.styleOverlayEls(resizeEl, this.overlayEls);
-      this.overlayEls.forEach(overlayEl => {
-        resizeEl.parentNode.insertBefore(overlayEl, resizeEl.nextSibling);
-        this.applyDraggable(overlayEl, resizeEl);
+    this.els.forEach(resizingEl => {
+      this.draggingEls = this.createResizeOverlays(this.options);
+      this.styleOverlayEls(resizingEl, this.draggingEls);
+      this.draggingEls.forEach(draggingEl => {
+        resizingEl.parentNode.insertBefore(draggingEl, resizingEl.nextSibling);
+        this.applyDraggable({draggingEl: draggingEl, resizingEl: resizingEl});
       });
     });
 
@@ -53,58 +53,58 @@ class TouchResize {
 
   reset(options) {
     this.options = Object.assign(this.options, options);
-    this.overlayEls.forEach(el => el.remove());
-    this.overlayEls = [];
+    this.draggingEls.forEach(el => el.remove());
+    this.draggingEls = [];
     document.removeEventListener(TouchUI.touchEnd, this.handlers.end);
     this.init();
   }
 
-  resizeStartHandler(e) {
-    let resizeEl = e.resizeFor;
-    let resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
+  resizeStartHandler(e, options) {
+    let resizeElBCR = options.resizingEl.getBoundingClientRect(); // top, left, width, height
     let resizePosition = e.target.getAttribute('resize-direction');
 
     this.touch.firstTouchMove = true;
     this.startWidth = resizeElBCR.width;
     this.startHeight = resizeElBCR.height;
+    this.resizeStarted = true;
 
-    TouchUI.fireTouchEvent(e.resizeFor, 'resize-start', e, {resizePosition: resizePosition});
+    TouchUI.fireTouchEvent(options.resizingEl, 'resize-start', e, {resizePosition: resizePosition});
   }
 
-  resizeMoveHandler(e) {
-    let resizeEl = e.resizeFor;
-    let resizePosition = e.target.getAttribute('resize-position');
-    let move = this.touch.getMove();
+  resizeMoveHandler(e, options) {
+    if (this.resizeStarted) {
+      let resizePosition = options.draggingEl.getAttribute('resize-position');
+      let move = this.touch.getMove();
 
-    if (this.touch.firstTouchMove) {
-      e.preventDefault();
-      this.touch.firstTouchMove = false;
-    }
+      if (this.touch.firstTouchMove) {
+        e.preventDefault();
+        this.touch.firstTouchMove = false;
+      }
 
-    if (resizePosition === 'right') {
-      resizeEl.style.width  = this.startWidth + move.x + 'px';
-    }
-    if (resizePosition === 'bottom') {
-      resizeEl.style.height = this.startHeight + move.y + 'px';
-    }
+      if (resizePosition === 'right') {
+        options.resizingEl.style.width  = this.startWidth + move.x + 'px';
+      }
+      if (resizePosition === 'bottom') {
+        options.resizingEl.style.height = this.startHeight + move.y + 'px';
+      }
 
-    TouchUI.fireTouchEvent(e.resizeFor, 'resize-move', e, {
-      move: move,
-      resizePosition: resizePosition
-    });
+      TouchUI.fireTouchEvent(options.resizingEl, 'resize-move', e, {
+        move: move,
+        resizePosition: resizePosition
+      });
+    }
   }
 
-  resizeEndHandler(e) {
+  resizeEndHandler(e, options) {
     let move = this.touch.getMove();
     let resizePosition = e.target.getAttribute('resize-position');
 
-    this.overlayEls.forEach(overlayEl => {
-      overlayEl.style.boxShadow = '';
-    });
+    this.draggingEls.forEach(el => (el.style.boxShadow = ''));
+    this.resizeStarted = false;
 
-    if (e.resizeFor) {
-      this.styleOverlayEls(e.resizeFor, this.overlayEls);
-      TouchUI.fireTouchEvent(e.resizeFor, 'resize-end', e, {
+    if (options) {
+      this.styleOverlayEls(options.resizingEl, this.draggingEls);
+      TouchUI.fireTouchEvent(options.resizingEl, 'resize-end', e, {
         move: move,
         resizePosition: resizePosition
       });
@@ -113,25 +113,25 @@ class TouchResize {
 
   createResizeOverlays(options) {
     /* eslint no-unused-vars: 0 */
-    let overlayEl;
+    let draggingEl;
     let top, left, width, height, cursor;
     let positions = options.positions.split(',').map(p => p.trim());
 
     positions.forEach(key => {
-      overlayEl = document.createElement('div');
-      overlayEl.setAttribute('resize-position', key);
-      this.overlayEls.push(overlayEl);
+      draggingEl = document.createElement('div');
+      draggingEl.setAttribute('resize-position', key);
+      this.draggingEls.push(draggingEl);
     });
 
-    return this.overlayEls;
+    return this.draggingEls;
   }
 
-  styleOverlayEls(resizeEl, overlayEls) {
+  styleOverlayEls(resizeEl, draggingEls) {
     let resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
     let top, left, width, height, cursor;
 
-    overlayEls.forEach(overlayEl => {
-      let key = overlayEl.getAttribute('resize-position');
+    draggingEls.forEach(draggingEl => {
+      let key = draggingEl.getAttribute('resize-position');
 
       // set style including position
       top    =
@@ -150,47 +150,48 @@ class TouchResize {
         key === 'bottom' ? 'ns-resize' :
         key === 'right' ?  'ew-resize' : 0;
 
-      overlayEl.style.position = 'absolute';
-      overlayEl.style.top = top + 'px';
-      overlayEl.style.left = left + 'px';
-      overlayEl.style.width = width + 'px';
-      overlayEl.style.height = height + 'px';
-      overlayEl.style.cursor = cursor;
-      overlayEl.style.backgroundColor = 'rgba(0,0,0,0.0)';
+      draggingEl.style.position = 'absolute';
+      draggingEl.style.top = top + 'px';
+      draggingEl.style.left = left + 'px';
+      draggingEl.style.width = width + 'px';
+      draggingEl.style.height = height + 'px';
+      draggingEl.style.cursor = cursor;
+      draggingEl.style.backgroundColor = 'rgba(0,0,0,0.0)';
     });
   }
 
-  applyDraggable(overlayEl, resizeForEl) {
+  applyDraggable(options) {
     let drags = [], touchDrag;
     let resizePosition, dragAxis;
+    let resizingEl = options.resizingEl, draggingEl = options.draggingEl;
 
     // add event listeners
-    resizePosition = overlayEl.getAttribute('resize-position');
+    resizePosition = draggingEl.getAttribute('resize-position');
     dragAxis =
       resizePosition === 'right' ? 'x' :
       resizePosition === 'bottom' ? 'y' : 'xy';
-    touchDrag = new TouchDrag(overlayEl, {axis: dragAxis, recoverWhenEnd: false});
+    touchDrag = new TouchDrag(draggingEl, {axis: dragAxis, recoverWhenEnd: false});
 
-    overlayEl.addEventListener('hold', e => {
+    draggingEl.addEventListener('hold', e => {
       e.target.style.boxShadow = '0px 0px 2px 2px rgba(255,255,0,1)';
     });
 
     document.addEventListener(TouchUI.touchEnd, this.handlers.end);
 
-    overlayEl.addEventListener('drag-start', e => {
-      e.resizeFor = resizeForEl;
-      this.resizeStartHandler(e);
+    draggingEl.addEventListener('drag-start', e => {
+      this.resizeStartHandler(e, options);
     });
-    overlayEl.addEventListener('drag-move', e => {
-      e.resizeFor = resizeForEl;
-      this.resizeMoveHandler(e);
+    // draggingEl.addEventListener('drag-move', e => {
+    //   this.resizeMoveHandler(e, options);
+    // });
+    document.body.addEventListener(TouchUI.touchMove, e => {
+      this.resizeMoveHandler(e, options);
     });
-    overlayEl.addEventListener('drag-end', e => {
-      e.resizeFor = resizeForEl;
-      this.resizeEndHandler(e);
+    draggingEl.addEventListener('drag-end', e => {
+      this.resizeEndHandler(e, options);
     });
 
-    return overlayEl;
+    return draggingEl;
   }
 }
 

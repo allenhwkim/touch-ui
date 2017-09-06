@@ -1043,7 +1043,7 @@ var TouchResize = function () {
     this.touch = new _touchUi2.default();
     this.startWidth;
     this.startHeight;
-    this.overlayEls = [];
+    this.draggingEls = [];
     this.handlers = {
       end: this.resizeEndHandler.bind(this)
     };
@@ -1069,12 +1069,12 @@ var TouchResize = function () {
     value: function init() {
       var _this = this;
 
-      this.els.forEach(function (resizeEl) {
-        _this.overlayEls = _this.createResizeOverlays(_this.options);
-        _this.styleOverlayEls(resizeEl, _this.overlayEls);
-        _this.overlayEls.forEach(function (overlayEl) {
-          resizeEl.parentNode.insertBefore(overlayEl, resizeEl.nextSibling);
-          _this.applyDraggable(overlayEl, resizeEl);
+      this.els.forEach(function (resizingEl) {
+        _this.draggingEls = _this.createResizeOverlays(_this.options);
+        _this.styleOverlayEls(resizingEl, _this.draggingEls);
+        _this.draggingEls.forEach(function (draggingEl) {
+          resizingEl.parentNode.insertBefore(draggingEl, resizingEl.nextSibling);
+          _this.applyDraggable({ draggingEl: draggingEl, resizingEl: resizingEl });
         });
       });
 
@@ -1084,63 +1084,65 @@ var TouchResize = function () {
     key: 'reset',
     value: function reset(options) {
       this.options = Object.assign(this.options, options);
-      this.overlayEls.forEach(function (el) {
+      this.draggingEls.forEach(function (el) {
         return el.remove();
       });
-      this.overlayEls = [];
+      this.draggingEls = [];
       document.removeEventListener(_touchUi2.default.touchEnd, this.handlers.end);
       this.init();
     }
   }, {
     key: 'resizeStartHandler',
-    value: function resizeStartHandler(e) {
-      var resizeEl = e.resizeFor;
-      var resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
+    value: function resizeStartHandler(e, options) {
+      var resizeElBCR = options.resizingEl.getBoundingClientRect(); // top, left, width, height
       var resizePosition = e.target.getAttribute('resize-direction');
 
       this.touch.firstTouchMove = true;
       this.startWidth = resizeElBCR.width;
       this.startHeight = resizeElBCR.height;
+      this.resizeStarted = true;
 
-      _touchUi2.default.fireTouchEvent(e.resizeFor, 'resize-start', e, { resizePosition: resizePosition });
+      _touchUi2.default.fireTouchEvent(options.resizingEl, 'resize-start', e, { resizePosition: resizePosition });
     }
   }, {
     key: 'resizeMoveHandler',
-    value: function resizeMoveHandler(e) {
-      var resizeEl = e.resizeFor;
-      var resizePosition = e.target.getAttribute('resize-position');
-      var move = this.touch.getMove();
+    value: function resizeMoveHandler(e, options) {
+      if (this.resizeStarted) {
+        var resizePosition = options.draggingEl.getAttribute('resize-position');
+        var move = this.touch.getMove();
 
-      if (this.touch.firstTouchMove) {
-        e.preventDefault();
-        this.touch.firstTouchMove = false;
-      }
+        if (this.touch.firstTouchMove) {
+          e.preventDefault();
+          this.touch.firstTouchMove = false;
+        }
 
-      if (resizePosition === 'right') {
-        resizeEl.style.width = this.startWidth + move.x + 'px';
-      }
-      if (resizePosition === 'bottom') {
-        resizeEl.style.height = this.startHeight + move.y + 'px';
-      }
+        if (resizePosition === 'right') {
+          options.resizingEl.style.width = this.startWidth + move.x + 'px';
+        }
+        if (resizePosition === 'bottom') {
+          options.resizingEl.style.height = this.startHeight + move.y + 'px';
+        }
 
-      _touchUi2.default.fireTouchEvent(e.resizeFor, 'resize-move', e, {
-        move: move,
-        resizePosition: resizePosition
-      });
+        _touchUi2.default.fireTouchEvent(options.resizingEl, 'resize-move', e, {
+          move: move,
+          resizePosition: resizePosition
+        });
+      }
     }
   }, {
     key: 'resizeEndHandler',
-    value: function resizeEndHandler(e) {
+    value: function resizeEndHandler(e, options) {
       var move = this.touch.getMove();
       var resizePosition = e.target.getAttribute('resize-position');
 
-      this.overlayEls.forEach(function (overlayEl) {
-        overlayEl.style.boxShadow = '';
+      this.draggingEls.forEach(function (el) {
+        return el.style.boxShadow = '';
       });
+      this.resizeStarted = false;
 
-      if (e.resizeFor) {
-        this.styleOverlayEls(e.resizeFor, this.overlayEls);
-        _touchUi2.default.fireTouchEvent(e.resizeFor, 'resize-end', e, {
+      if (options) {
+        this.styleOverlayEls(options.resizingEl, this.draggingEls);
+        _touchUi2.default.fireTouchEvent(options.resizingEl, 'resize-end', e, {
           move: move,
           resizePosition: resizePosition
         });
@@ -1152,7 +1154,7 @@ var TouchResize = function () {
       var _this2 = this;
 
       /* eslint no-unused-vars: 0 */
-      var overlayEl = void 0;
+      var draggingEl = void 0;
       var top = void 0,
           left = void 0,
           width = void 0,
@@ -1163,16 +1165,16 @@ var TouchResize = function () {
       });
 
       positions.forEach(function (key) {
-        overlayEl = document.createElement('div');
-        overlayEl.setAttribute('resize-position', key);
-        _this2.overlayEls.push(overlayEl);
+        draggingEl = document.createElement('div');
+        draggingEl.setAttribute('resize-position', key);
+        _this2.draggingEls.push(draggingEl);
       });
 
-      return this.overlayEls;
+      return this.draggingEls;
     }
   }, {
     key: 'styleOverlayEls',
-    value: function styleOverlayEls(resizeEl, overlayEls) {
+    value: function styleOverlayEls(resizeEl, draggingEls) {
       var resizeElBCR = resizeEl.getBoundingClientRect(); // top, left, width, height
       var top = void 0,
           left = void 0,
@@ -1180,8 +1182,8 @@ var TouchResize = function () {
           height = void 0,
           cursor = void 0;
 
-      overlayEls.forEach(function (overlayEl) {
-        var key = overlayEl.getAttribute('resize-position');
+      draggingEls.forEach(function (draggingEl) {
+        var key = draggingEl.getAttribute('resize-position');
 
         // set style including position
         top = key === 'bottom' ? window.scrollY + resizeElBCR.bottom - 12 : key === 'right' ? window.scrollY + resizeElBCR.top + 1 : 0;
@@ -1190,50 +1192,52 @@ var TouchResize = function () {
         height = key === 'bottom' ? 20 : key === 'right' ? resizeElBCR.height - 2 : 0;
         cursor = key === 'bottom' ? 'ns-resize' : key === 'right' ? 'ew-resize' : 0;
 
-        overlayEl.style.position = 'absolute';
-        overlayEl.style.top = top + 'px';
-        overlayEl.style.left = left + 'px';
-        overlayEl.style.width = width + 'px';
-        overlayEl.style.height = height + 'px';
-        overlayEl.style.cursor = cursor;
-        overlayEl.style.backgroundColor = 'rgba(0,0,0,0.0)';
+        draggingEl.style.position = 'absolute';
+        draggingEl.style.top = top + 'px';
+        draggingEl.style.left = left + 'px';
+        draggingEl.style.width = width + 'px';
+        draggingEl.style.height = height + 'px';
+        draggingEl.style.cursor = cursor;
+        draggingEl.style.backgroundColor = 'rgba(0,0,0,0.0)';
       });
     }
   }, {
     key: 'applyDraggable',
-    value: function applyDraggable(overlayEl, resizeForEl) {
+    value: function applyDraggable(options) {
       var _this3 = this;
 
       var drags = [],
           touchDrag = void 0;
       var resizePosition = void 0,
           dragAxis = void 0;
+      var resizingEl = options.resizingEl,
+          draggingEl = options.draggingEl;
 
       // add event listeners
-      resizePosition = overlayEl.getAttribute('resize-position');
+      resizePosition = draggingEl.getAttribute('resize-position');
       dragAxis = resizePosition === 'right' ? 'x' : resizePosition === 'bottom' ? 'y' : 'xy';
-      touchDrag = new _touchDrag2.default(overlayEl, { axis: dragAxis, recoverWhenEnd: false });
+      touchDrag = new _touchDrag2.default(draggingEl, { axis: dragAxis, recoverWhenEnd: false });
 
-      overlayEl.addEventListener('hold', function (e) {
+      draggingEl.addEventListener('hold', function (e) {
         e.target.style.boxShadow = '0px 0px 2px 2px rgba(255,255,0,1)';
       });
 
       document.addEventListener(_touchUi2.default.touchEnd, this.handlers.end);
 
-      overlayEl.addEventListener('drag-start', function (e) {
-        e.resizeFor = resizeForEl;
-        _this3.resizeStartHandler(e);
+      draggingEl.addEventListener('drag-start', function (e) {
+        _this3.resizeStartHandler(e, options);
       });
-      overlayEl.addEventListener('drag-move', function (e) {
-        e.resizeFor = resizeForEl;
-        _this3.resizeMoveHandler(e);
+      // draggingEl.addEventListener('drag-move', e => {
+      //   this.resizeMoveHandler(e, options);
+      // });
+      document.body.addEventListener(_touchUi2.default.touchMove, function (e) {
+        _this3.resizeMoveHandler(e, options);
       });
-      overlayEl.addEventListener('drag-end', function (e) {
-        e.resizeFor = resizeForEl;
-        _this3.resizeEndHandler(e);
+      draggingEl.addEventListener('drag-end', function (e) {
+        _this3.resizeEndHandler(e, options);
       });
 
-      return overlayEl;
+      return draggingEl;
     }
   }]);
 
