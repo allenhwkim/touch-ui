@@ -84,3 +84,5 @@ sleep 500
 mouse move x 1 y 1
 mouse move x 50 y 1
 # verify element #resize-webtest text "left: 410.5px, right: 356.5px"
+
+close browser
