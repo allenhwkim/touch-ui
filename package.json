@@ -9,7 +9,13 @@
     "clean": "rimraf dist",
     "build": "webpack --env build",
     "dev": "webpack --progress --colors --watch --env dev",
-    "test": "nyc ava"
+    "test": "npm-run-all test:unit test:webtest",
+    "test:unit": "nyc ava",
+    "test:webtest": "npm-run-all webtest:start webtest:run webtest:stop",
+    "webtest:start": "forever start --silent node_modules/http-server/bin/http-server",
+    "webtest:stop": "forever stop --silent node_modules/http-server/bin/http-server",
+    "webtest:run": "webtest webtest.txt",
+    "upgrade": "npm-check-updates -a/--upgradeAll && npm i"
   },
   "repository": {
     "type": "git",
@@ -44,13 +50,15 @@
     "eslint": "^4.4.1",
     "eslint-config-google": "^0.9.1",
     "eslint-loader": "^1.7.1",
-    "forever": "^0.15.2",
-    "npm-run-all": "^3.1.0",
+    "forever": "^0.15.3",
+    "http-server": "^0.10.0",
+    "npm-check-updates": "^2.12.1",
+    "npm-run-all": "^3.1.2",
     "nyc": "^11.1.0",
     "preferences": "^0.2.1",
     "rimraf": "^2.6.1",
     "webpack": "3.1.0",
-    "webtest": "^0.6.4",
+    "webtest": "^0.8.1",
     "yargs": "7.1.0"
   },
   "babel": {

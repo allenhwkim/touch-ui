@@ -1,0 +1,86 @@
+open browser
+go to http://localhost:8080/demo/index.html
+set window size 800 600
+
+### TAP-HOLD
+click #tap-hold
+verify element #tap-hold-webtest text "tap"
+mouse down on element #tap-hold-webtest 
+sleep 100
+#verify element #tap-hold-webtest text "hold"
+mouse up
+verify element #tap-hold-webtest text "tap"
+mouse down on element #tap-hold-webtest 
+sleep 100
+#verify element #tap-hold-webtest text "tap-and-hold"
+mouse up
+click #tap-hold
+verify element #tap-hold-webtest text "double-tap"
+click #tap-hold
+verify element #tap-hold-webtest text "triple-tap"
+
+### DRAG/DROP
+mouse down on element "#drop-test .draggable:nth-child(2)"
+mouse down on element "#drop-test .draggable:nth-child(3)"
+#
+mouse down on element "#drop-test .draggable:nth-child(1)"
+sleep 100
+mouse move x 1 y 1
+mouse move to "#drop-test .droppable:nth-child(2)"
+mouse move x 1 y 1
+mouse up
+verify element #drop-webtest text "1"
+#
+mouse down on element "#drop-test .draggable:nth-child(1)"
+sleep 100
+mouse move x 1 y 1
+mouse move to "#drop-test .droppable:nth-child(2)"
+mouse move x 1 y 1
+mouse up
+verify element #drop-webtest text "2"
+#
+mouse down on element "#drop-test .draggable:nth-child(1)"
+sleep 100
+mouse move x 1 y 1
+mouse move to "#drop-test .droppable:nth-child(2)"
+mouse move x 1 y 1
+mouse up
+verify element #drop-webtest text "3"
+
+### SWIPE
+click "#swipe-test > :nth-child(2)"
+mouse down on element "#swipe-test > :nth-child(1)"
+mouse move x 100 y 1
+mouse up
+verify element #swipe-webtest text "swipe-right"
+mouse down on element "#swipe-test > :nth-child(1)"
+mouse move x -100 y 1
+mouse up
+verify element #swipe-webtest text "swipe-left"
+mouse down on element "#swipe-test > :nth-child(1)"
+mouse move x 1 y 100
+mouse up
+verify element #swipe-webtest text "swipe-down"
+mouse down on element "#swipe-test > :nth-child(2)"
+mouse move x 1 y -100
+mouse up
+verify element #swipe-webtest text "swipe-up"
+
+### PAN/ZOOM
+mouse down on element "#pan-test"
+sleep 500
+mouse move x 50 y 5 
+mouse move x 50 y 5 
+mouse up
+verify element #pan-webtest text "backgroundPosition: 100px,55px,"
+click #do-zoom
+mouse down on element "#pan-test"
+sleep 500
+mouse move x 50 y 5 
+
+### RESIZE
+mouse down on element "#resize-test > :nth-child(2)"
+sleep 500
+mouse move x 1 y 1
+mouse move x 50 y 1
+# verify element #resize-webtest text "left: 410.5px, right: 356.5px"
