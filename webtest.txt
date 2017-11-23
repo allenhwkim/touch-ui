@@ -3,19 +3,18 @@ go to http://localhost:8080/demo/index.html
 set window size 800 600
 
 ### TAP-HOLD
+mouse down on element #tap-hold 
+sleep 100
+verify element #tap-hold-webtest text "hold"
+mouse up
+verify element #tap-hold-webtest text "tap"
+sleep 500
 click #tap-hold
-verify element #tap-hold-webtest text "tap"
-mouse down on element #tap-hold-webtest 
-sleep 100
-#verify element #tap-hold-webtest text "hold"
-mouse up
-verify element #tap-hold-webtest text "tap"
-mouse down on element #tap-hold-webtest 
-sleep 100
-#verify element #tap-hold-webtest text "tap-and-hold"
-mouse up
 click #tap-hold
 verify element #tap-hold-webtest text "double-tap"
+sleep 500
+click #tap-hold
+click #tap-hold
 click #tap-hold
 verify element #tap-hold-webtest text "triple-tap"
 
@@ -72,7 +71,7 @@ sleep 500
 mouse move x 50 y 5 
 mouse move x 50 y 5 
 mouse up
-verify element #pan-webtest text "backgroundPosition: 100px,55px,"
+verify element #pan-webtest text matches "backgroundPosition:"
 click #do-zoom
 mouse down on element "#pan-test"
 sleep 500
@@ -83,6 +82,6 @@ mouse down on element "#resize-test > :nth-child(2)"
 sleep 500
 mouse move x 1 y 1
 mouse move x 50 y 1
-# verify element #resize-webtest text "left: 410.5px, right: 356.5px"
+verify element #resize-webtest text matches "left: .*px, right: .*px"
 
 close browser
